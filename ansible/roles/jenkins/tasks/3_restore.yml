@@ -1,0 +1,5 @@
+---
+
+- name: Restore from a specific backup
+  command: aws s3 cp s3://{{ s3_bucket_name }}/{{ s3_bucket_path }}/{{ s3_backup_object }} {{ jenkins_backup }}/{{ s3_backup_object }}/. --recursive --region eu-west-1
+  register: s3_backup_download

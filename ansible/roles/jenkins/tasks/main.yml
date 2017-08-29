@@ -1,0 +1,11 @@
+---
+
+  - include: 0_install.yml
+
+  - include: 1_config.yml
+
+  - include: 2_plugins.yml
+    when: install_plugins
+
+  - include: 3_restore.yml
+    when: restore_from_backup

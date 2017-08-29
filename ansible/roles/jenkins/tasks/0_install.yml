@@ -1,0 +1,58 @@
+---
+
+- name: Update packages.
+  yum: name=* state=latest
+
+- name: Setup Jenkins repo - Amazon
+  yum_repository:
+    name: jenkins
+    description: jenkins repo
+    baseurl: "{{ jenkins_yum_url }}"
+    gpgcheck: "{{ jenkins_yum_check }}"
+    gpgkey: "{{ jenkins_gpg_url }}"
+    enabled: yes
+
+- name: Install dependencies packages.
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ jenkins_yum_pkg_to_install }}"
+
+- name: Setup Maven repo - Amazon
+  yum_repository:
+    name: maven
+    description: maven repo
+    baseurl: "{{ maven_yum_url }}"
+    gpgcheck: "{{ maven_yum_check }}"
+    enabled: yes
+
+- name: Setup SBT repo
+  yum_repository:
+    name: bintray-sbt-rpm
+    description: Packages from Bintray
+    baseurl: http://dl.bintray.com/sbt/rpm
+    gpgcheck: no
+    enabled: yes
+
+- name: Install SBT
+  yum:
+    name: sbt
+    state: latest
+
+- name: Install Maven
+  yum:
+    name: apache-maven
+    state: latest
+
+- name: Install JQ
+  yum:
+    name: jq
+    state: latest
+
+- name: Install Jenkins
+  yum:
+    name: jenkins
+    state: latest
+
+- name: Ensure Jenkins starts on startup
+  command: chkconfig --add jenkins

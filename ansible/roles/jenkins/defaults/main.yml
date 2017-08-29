@@ -1,0 +1,75 @@
+# Jenkins boolean variables
+apply_default_config_files: false
+apply_additional_config_files: false
+use_ansible_on_jenkins: false
+use_jenkins_worker_ssh: false
+use_proxy: false
+install_plugins: false
+restore_from_backup: false
+
+# Jenkins slack details
+slack_token: foobar
+slack_room: foo
+slack_domain: bar
+
+# Jenkins s3 bucket details
+s3_bucket_name: foo
+s3_bucket_path: /foo/
+s3_backup_object: /foo/bar
+
+# Jenkins locations
+jenkins_home: /opt/jenkins
+jenkins_backup: /opt/jenkins_backup
+jenkins_tmp: /var/jenkins
+jenkins_user: jenkins
+jenkins_group: jenkins
+# Jenkins Proxy settings
+proxy_env: fb
+proxy_host: foo.bar
+proxy_port: 1
+proxy_login: foob
+proxy_password: fbar
+# Jenkins
+jenkins_connection_delay: 5
+jenkins_connection_retries: 60
+jenkins_master_email: address not configured yet <nobody@nowhere>
+# Jenkins verions
+jenkins_maven_version: 3.3.9
+jenkins_version: "{{ latest_jenkins_lts_version }}"
+# Jenkins connection details
+jenkins_port: 8080
+jenkins_hostname: localhost
+jenkins_master_url: "http://localhost:{{ jenkins_port }}/"
+jenkins_jar_location: "{{jenkins_home}}/jenkins-cli.jar"
+jenkins_temp_location: /tmp
+jenkins_worker_key: 0
+
+# Jenkins plugin list
+jenkins_plugins:
+  - bitbucket
+  - authorize-project
+  - build-monitor-plugin
+  - build-pipeline-plugin
+  - build-timeout
+  - log-parser
+  - mission-control-view
+  - workflow-aggregator
+  - role-strategy
+  - scm-sync-configuration
+  - thinBackup
+  - timestamper
+  - ws-cleanup
+  - credentials-binding
+  - slack
+
+# Yum repository settings
+jenkins_yum_url: "http://pkg.jenkins.io/redhat-stable"
+jenkins_gpg_url: "http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key"
+jenkins_yum_check: yes
+jenkins_yum_pkg_to_install:
+  - git
+  - zip
+  - python26-pyOpenSSL
+  - python27-pyOpenSSL
+maven_yum_url: "http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/$basearch/"
+maven_yum_check: no

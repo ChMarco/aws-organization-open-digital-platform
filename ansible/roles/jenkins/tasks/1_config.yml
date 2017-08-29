@@ -1,0 +1,145 @@
+---
+
+- name: Start jenkins
+  service:
+    name: jenkins
+    state: stopped
+
+- name: Update the jenkins user details
+  lineinfile:
+    dest: /etc/passwd
+    regexp: "^jenkins:x:"
+    line: "jenkins:x:1000:1000:Jenkins Continuous Integration Server:{{ jenkins_home }}:/bin/bash"
+    state: present
+    backup: yes
+
+- name: Create directories
+  file:
+    name: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
+  with_items:
+    - "{{ jenkins_backup }}"
+    - "{{ jenkins_tmp }}"
+    - "{{ jenkins_home }}/users/jenkins"
+
+- name: Place file in Jenkins home directory to disable unlock Jenkins screen.
+  copy:
+    src: unlock.hack
+    dest: "{{ jenkins_home }}/jenkins.install.InstallUtil.lastExecVersion"
+    owner: jenkins
+    group: jenkins
+    mode: 0755
+
+- name: Update Jenkins sysconfig
+  template:
+    src: jenkins.j2
+    dest: /etc/sysconfig/jenkins
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Start jenkins
+  service:
+    name: jenkins
+    state: started
+
+- name: Wait for Jenkins to start up before proceeding.
+  shell: curl --noproxy '*' --head --silent http://{{ jenkins_hostname }}:{{ jenkins_port }}/cli/
+  register: result
+  until: result.stdout.find("200 OK") != -1
+  retries: "{{ jenkins_connection_retries }}"
+  delay: "{{ jenkins_connection_delay }}"
+  changed_when: false
+  args:
+    warn: no
+
+- name: Start/stop jenkins if fresh install - check for jobs directory
+  stat: path={{ jenkins_home }}/jobs
+  register: jobs
+
+- name: Start/stop jenkins if fresh install - stop jenkins to create directories
+  service:
+    name: jenkins
+    state: stopped
+  when: jobs.stat.isdir is not defined
+
+- name: Add backup settings to Jenkins
+  template:
+    src: thinBackup.xml.j2
+    dest: "{{ jenkins_home }}/thinBackup.xml"
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
+
+- name: Add proxy settings to Jenkins
+  template:
+    src: proxy.xml.j2
+    dest: "{{ jenkins_home }}/proxy.xml"
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
+  when: "{{ proxy_env }} is defined"
+
+- name: Copy config files - not overwriting existing files
+  template:
+    src: "{{ item.file }}"
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
+    dest: "{{ item.dest }}"
+    force: no
+  with_items:
+    - { file: "jenkins_global_config.j2", dest: "{{ jenkins_home }}/config.xml" }
+  register: copy_config_files
+  when: apply_default_config_files
+
+- name: Copy config files - overwrite existing files
+  template:
+    src: "{{ item.file }}"
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { file: "jenkins.model.JenkinsLocationConfiguration.xml.j2", dest: "{{ jenkins_home }}/jenkins.model.JenkinsLocationConfiguration.xml" }
+    - { file: "jenkins.plugins.slack.SlackNotifier.xml.j2", dest: "{{ jenkins_home }}/jenkins.plugins.slack.SlackNotifier.xml" }
+  register: copy_config_files
+  tags: gerrit
+  when: apply_additional_config_files
+
+- name: restart jenkins if config files have changed
+  service:
+    name: jenkins
+    state: restarted
+  when: copy_config_files.changed
+
+- name: ensure jenkins is started if no changes were made
+  service:
+    name: jenkins
+    state: started
+  when: not copy_config_files.changed
+
+- name: ensure .ssh directory exists for jenkins user
+  file:
+    dest: "{{ jenkins_home }}/.ssh"
+    state: directory
+    mode: 0700
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
+
+#- name: Create private key for ansible -- VERISON 2.3 reqired in order to run this!
+#  openssl_privatekey:
+#    path: "{{ jenkins_home }}/.ssh/ansible.pem"
+#    size: 4096
+#    state: present
+#    type: RSA
+#    force: True
+#  when: use_ansible_on_jenkins
+
+- name: install ssh key for slave access
+  copy:
+   content: "{{ jenkins_worker_key }}"
+   dest: "{{ jenkins_home }}/.ssh/jenkins_worker.pub"
+   mode: 0400
+   owner: "{{ jenkins_user }}"
+   group: "{{ jenkins_group }}"
+  when: use_jenkins_worker_ssh
