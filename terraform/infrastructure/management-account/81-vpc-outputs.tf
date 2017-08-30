@@ -1,6 +1,0 @@
-/*
- * Module: VPC
- *
- * Outputs
- *
- */

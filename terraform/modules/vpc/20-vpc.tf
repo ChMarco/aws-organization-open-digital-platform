@@ -26,8 +26,9 @@ resource "aws_vpc" "vpc" {
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_dmz_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                element(data.aws_availability_zones.available.names, count.index)
             )
         )
     )}"

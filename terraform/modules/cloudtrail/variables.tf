@@ -2,9 +2,9 @@
  * Module: cloudtrail
  *
  * Variables:
- *   - s3_bucket
+ *   - cloudtrail_bucket_name
  */
 
-variable "s3_bucket" {
+variable "cloudtrail_bucket_name" {
   description = "S3 bucket to use for cloudtrail"
 }

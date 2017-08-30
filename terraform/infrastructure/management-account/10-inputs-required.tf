@@ -6,3 +6,5 @@ variable "dmz_subnet_cidr_blocks" {}
 variable "public_subnet_cidr_blocks" {}
 variable "private_subnet_cidr_blocks" {}
 variable "deploy_environment" {}
+
+variable "cloudtrail_bucket_name" {}
