@@ -1,0 +1,9 @@
+variable "desired_capacity" {}
+variable "max_size" {}
+variable "min_size" {}
+variable "cool_down_period" {}
+variable "healthcheck_grace_period" {}
+variable "health_check_type" {}
+variable "elb" {}
+variable "lc" {}
+variable "asg_name" {}

@@ -1,0 +1,1 @@
+variable "tags_Created_By" { default = "Terraform" }

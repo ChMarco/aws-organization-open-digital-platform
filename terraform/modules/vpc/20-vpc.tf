@@ -75,11 +75,11 @@ resource "aws_vpn_gateway" "vpn_gw" {
 ## DMZ (VPN)
 resource "aws_subnet" "dmz_subnet" {
 
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 
   vpc_id = "${aws_vpc.vpc.id}"
   availability_zone = "${format("%s", element(data.aws_availability_zones.available.names, count.index))}"
-  cidr_block = ""
+  cidr_block = "${element(split(",", var.dmz_subnet_cidr_blocks), count.index)}"
 
   map_public_ip_on_launch = "true"
   tags = "${merge(
@@ -97,11 +97,11 @@ resource "aws_subnet" "dmz_subnet" {
 ## Public
 resource "aws_subnet" "public_subnet" {
 
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 
   vpc_id = "${aws_vpc.vpc.id}"
   availability_zone = "${format("%s", element(data.aws_availability_zones.available.names, count.index))}"
-  cidr_block = ""
+  cidr_block = "${element(split(",", var.public_subnet_cidr_blocks), count.index)}"
 
   map_public_ip_on_launch = "false"
   tags = "${merge(
@@ -119,11 +119,11 @@ resource "aws_subnet" "public_subnet" {
 ## Private
 resource "aws_subnet" "private_subnet" {
 
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 
   vpc_id = "${aws_vpc.vpc.id}"
   availability_zone = "${format("%s", element(data.aws_availability_zones.available.names, count.index))}"
-  cidr_block = ""
+  cidr_block = "${element(split(",", var.private_subnet_cidr_blocks), count.index)}"
 
   map_public_ip_on_launch = "false"
   tags = "${merge(
@@ -162,7 +162,7 @@ resource "aws_route_table" "dmz_subnet_rt" {
 resource "aws_route_table_association" "dmz_subnet_rta" {
   subnet_id = "${element(aws_subnet.dmz_subnet.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.dmz_subnet_rt.*.id, count.index)}"
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 }
 
 ## Public
@@ -187,7 +187,7 @@ resource "aws_route_table" "public_subnet_rt" {
 resource "aws_route_table_association" "public_subnet_rta" {
   subnet_id = "${element(aws_subnet.dmz_subnet.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.public_subnet_rt.*.id, count.index)}"
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 }
 
 ## Private
@@ -212,7 +212,7 @@ resource "aws_route_table" "private_subnet_rt" {
 resource "aws_route_table_association" "private_subnet_rta" {
   subnet_id = "${element(aws_subnet.dmz_subnet.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.private_subnet_rt.*.id, count.index)}"
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 }
 
 # Routes
@@ -228,10 +228,10 @@ resource "aws_route" "public_egress" {
   nat_gateway_id = "${element(aws_nat_gateway.natgw.*.id, count.index)}"
   destination_cidr_block = "0.0.0.0/0"
 
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 
   depends_on = [
-    "aws_route_table.public_rt"
+    "aws_route_table.public_subnet_rt"
   ]
 }
 
@@ -240,10 +240,10 @@ resource "aws_route" "private_egress" {
   nat_gateway_id = "${element(aws_nat_gateway.natgw.*.id, count.index)}"
   destination_cidr_block = "0.0.0.0/0"
 
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 
   depends_on = [
-    "aws_route_table.public_rt"
+    "aws_route_table.public_subnet_rt"
   ]
 }
 
@@ -254,14 +254,14 @@ resource "aws_route" "private_egress" {
 resource "aws_eip" "natgw_eip" {
   vpc = true
 
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 }
 
 resource "aws_nat_gateway" "natgw" {
   subnet_id = "${element(aws_subnet.dmz_subnet.*.id, count.index)}"
   allocation_id = "${element(aws_eip.natgw_eip.*.id, count.index)}"
 
-  count = "${data.aws_availability_zones.available.names}"
+  count = "${length(data.aws_availability_zones.available.names)}"
   depends_on = [
     "aws_internet_gateway.vpc_igw"
   ]
