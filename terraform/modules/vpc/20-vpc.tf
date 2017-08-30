@@ -148,12 +148,15 @@ resource "aws_route_table" "dmz_subnet_rt" {
     "${aws_vpn_gateway.vpn_gw.id}"
   ]
 
+  count = "${length(data.aws_availability_zones.available.names)}"
+
   tags = "${merge(
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_dmz",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_dmz_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                element(data.aws_availability_zones.available.names, count.index)
             )
         )
     )}"
@@ -162,6 +165,7 @@ resource "aws_route_table" "dmz_subnet_rt" {
 resource "aws_route_table_association" "dmz_subnet_rta" {
   subnet_id = "${element(aws_subnet.dmz_subnet.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.dmz_subnet_rt.*.id, count.index)}"
+
   count = "${length(data.aws_availability_zones.available.names)}"
 }
 
@@ -173,19 +177,22 @@ resource "aws_route_table" "public_subnet_rt" {
     "${aws_vpn_gateway.vpn_gw.id}"
   ]
 
+  count = "${length(data.aws_availability_zones.available.names)}"
+
   tags = "${merge(
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_public",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_public_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                element(data.aws_availability_zones.available.names, count.index)
             )
         )
     )}"
 }
 
 resource "aws_route_table_association" "public_subnet_rta" {
-  subnet_id = "${element(aws_subnet.dmz_subnet.*.id, count.index)}"
+  subnet_id = "${element(aws_subnet.public_subnet.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.public_subnet_rt.*.id, count.index)}"
   count = "${length(data.aws_availability_zones.available.names)}"
 }
@@ -198,19 +205,22 @@ resource "aws_route_table" "private_subnet_rt" {
     "${aws_vpn_gateway.vpn_gw.id}"
   ]
 
+  count = "${length(data.aws_availability_zones.available.names)}"
+
   tags = "${merge(
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_private",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_private_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                element(data.aws_availability_zones.available.names, count.index)
             )
         )
     )}"
 }
 
 resource "aws_route_table_association" "private_subnet_rta" {
-  subnet_id = "${element(aws_subnet.dmz_subnet.*.id, count.index)}"
+  subnet_id = "${element(aws_subnet.private_subnet.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.private_subnet_rt.*.id, count.index)}"
   count = "${length(data.aws_availability_zones.available.names)}"
 }
@@ -218,18 +228,25 @@ resource "aws_route_table_association" "private_subnet_rta" {
 # Routes
 
 resource "aws_route" "dmz_egress" {
-  route_table_id = "${aws_route_table.dmz_subnet_rt.id}"
+  route_table_id = "${element(aws_route_table.dmz_subnet_rt.*.id, count.index)}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id = "${aws_internet_gateway.vpc_igw.id}"
-}
-
-resource "aws_route" "public_egress" {
-  route_table_id = "${element(aws_route_table.public_subnet_rt.*.id, count.index)}"
-  nat_gateway_id = "${element(aws_nat_gateway.natgw.*.id, count.index)}"
-  destination_cidr_block = "0.0.0.0/0"
 
   count = "${length(data.aws_availability_zones.available.names)}"
 
+  depends_on = [
+    "aws_route_table.dmz_subnet_rt"
+  ]
+}
+
+resource "aws_route" "public_egress" {
+
+  count = "${length(data.aws_availability_zones.available.names)}"
+
+  route_table_id = "${element(aws_route_table.public_subnet_rt.*.id, count.index)}"
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id = "${element(aws_nat_gateway.natgw.*.id, count.index)}"
+//
   depends_on = [
     "aws_route_table.public_subnet_rt"
   ]
@@ -278,7 +295,9 @@ resource "aws_vpc_endpoint" "s3_endpoint" {
 
 resource "aws_vpc_endpoint_route_table_association" "private_s3" {
   vpc_endpoint_id = "${aws_vpc_endpoint.s3_endpoint.id}"
-  route_table_id = "${aws_route_table.private_subnet_rt.id}"
+  route_table_id = "${element(aws_route_table.private_subnet_rt.*.id, count.index)}"
+
+  count = "${length(data.aws_availability_zones.available.names)}"
 }
 
 resource "aws_vpc_endpoint" "dynamodb_endpoint" {
@@ -288,5 +307,7 @@ resource "aws_vpc_endpoint" "dynamodb_endpoint" {
 
 resource "aws_vpc_endpoint_route_table_association" "private_dynamodb" {
   vpc_endpoint_id = "${aws_vpc_endpoint.dynamodb_endpoint.id}"
-  route_table_id = "${aws_route_table.private_subnet_rt.id}"
+  route_table_id = "${element(aws_route_table.private_subnet_rt.*.id, count.index)}"
+
+  count = "${length(data.aws_availability_zones.available.names)}"
 }

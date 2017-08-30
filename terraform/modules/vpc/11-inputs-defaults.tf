@@ -11,5 +11,6 @@ variable "base_aws_tags" {
         Account = "Management"
         Billing = "Management"
         Role = "Management-VPC"
+        Created_By = "Terraform"
     }
 }
