@@ -1,0 +1,25 @@
+#cloud-config
+
+users:
+  - default
+  - name: ${username}
+    gecos: ${username}
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: wheel
+    ssh-import-id: None
+    lock_passwd: true
+    ssh-authorized-keys:
+      - "${ssh_pub_key}"
+
+runcmd:
+  - 'sleep 90'
+  - 'export TERM=xterm-256color'
+  - 'export DEBIAN_FRONTEND=noninteractive'
+  - 'INSTANCE_ID=$(/usr/bin/curl -s http://169.254.169.254/latest/meta-data/instance-id)'
+  - 'EIP_ALLOCATION_ID="${eip_allocation_id}"'
+  - 'AWS_REGION="${aws_region}"'
+  - 'aws ec2 associate-address --instance-id $${INSTANCE_ID} --allocation-id $${EIP_ALLOCATION_ID} --region $${AWS_REGION}'
+  - 'aws ec2 modify-instance-attribute --instance-id $${INSTANCE_ID} --source-dest-check "{\"Value\": false}" --region $${AWS_REGION}'
+
+output: {all: '| tee -a /var/log/cloud-init-output.log'}
