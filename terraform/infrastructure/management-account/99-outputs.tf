@@ -9,3 +9,7 @@ output "cloudtrail_outputs" {
 output "bastion_outputs" {
   value = "${module.bastion.bastion_outputs}"
 }
+
+output "jenkins_outputs" {
+  value = "${module.jenkins.jenkins_outputs}"
+}

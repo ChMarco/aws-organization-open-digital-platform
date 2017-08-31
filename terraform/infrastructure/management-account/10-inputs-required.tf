@@ -19,3 +19,5 @@ variable "bastion_ssh_whitelist" { type = "map" }
 variable "provisioner_ssh_public_key" {}
 
 # Jenkins
+variable "jenkins_public_key" {}
+variable "jenkins_web_whitelist" { type = "map" }

@@ -206,7 +206,7 @@ resource "aws_launch_configuration" "bastion_launch_configuration" {
 resource "aws_autoscaling_group" "bastion_asg" {
 
     vpc_zone_identifier = [
-      "${var.bastion_subnets}"
+      "${split(",", var.bastion_subnets)}"
     ]
     name = "${format("%s_bastion",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
