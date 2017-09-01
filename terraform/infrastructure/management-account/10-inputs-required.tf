@@ -21,3 +21,8 @@ variable "provisioner_ssh_public_key" {}
 # Jenkins
 variable "jenkins_public_key" {}
 variable "jenkins_web_whitelist" { type = "map" }
+
+# BitBucket
+variable "bitbucket_public_key" {}
+variable "bitbucket_web_whitelist" { type = "map" }
+

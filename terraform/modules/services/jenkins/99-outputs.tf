@@ -24,7 +24,6 @@ data "null_data_source" "outputs" {
     jenkins_proxy_ecs_task_definition_arn = "${aws_ecs_task_definition.jenkins_proxy_ecs_task.arn}"
     jenkins_ecs_service_id = "${aws_ecs_service.jenkins_ecs_service.id}"
     jenkins_proxy_ecs_service = "${aws_ecs_service.jenkins_proxy_ecs_service.id}"
-    jenkins_user_data = "${data.template_file.user_data.rendered}"
   }
 }
 

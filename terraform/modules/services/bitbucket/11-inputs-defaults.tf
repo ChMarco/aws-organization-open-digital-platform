@@ -1,7 +1,7 @@
 variable "base_aws_tags" {
   type = "map"
   default = {
-    Role = "Jenkins"
+    Role = "BitBucket"
     Created_By = "Terraform"
   }
 }
@@ -21,9 +21,20 @@ variable "asg_force_delete" { default = "true" }
 variable "asg_termination_policies" { default = "OldestInstance" }
 variable "asg_health_check_grace_period" { default = "180" }
 
+variable "rds_instance_identifier" { default = "bitbucket" }
+variable "rds_is_multi_az" { default = "true" }
+variable "rds_allocated_storage" { default = "10" }
+variable "rds_storage_type" { default = "gp2" }
+variable "rds_engine" { default = "postgres" }
+variable "rds_engine_version" { default = "9.6.3" }
+variable "rds_instance_class" { default = "db.t2.medium" }
+variable "rds_name" { default = "bitbucket" }
+variable "rds_username" { default = "bitbucketadmin" }
+variable "rds_password" { default = "NesGQbsiUYdNPoPHViXgacJ9" }
+
 variable "service_desired_count" { default = "1" }
 
-variable "jenkins_ami" {
+variable "bitbucket_ami" {
     type = "map"
     description = "AWS ECS optimized images"
     default = {

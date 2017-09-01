@@ -6,7 +6,7 @@ variable "base_aws_tags" {
   }
 }
 
-variable "lc_associate_public_ip_address" { default = "true" }
+variable "lc_associate_public_ip_address" { default = "false" }
 variable "lc_ami_id" { default = "" }
 variable "lc_instance_type" { default = "t2.micro" }
 variable "lc_iam_instance_profile" { default = "" }

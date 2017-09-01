@@ -13,3 +13,7 @@ output "bastion_outputs" {
 output "jenkins_outputs" {
   value = "${module.jenkins.jenkins_outputs}"
 }
+
+output "bitbucket_outputs" {
+  value = "${module.bitbucket.bitbucket_outputs}"
+}

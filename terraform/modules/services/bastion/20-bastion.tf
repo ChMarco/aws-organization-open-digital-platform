@@ -2,7 +2,17 @@
  * Module: Bastion
  *
  * Components:
- *   -
+ *   - bastion_key_pair
+ *   - bastion_security_group
+ *   - bastion_assume_role_policy_document
+ *   - bastion_iam_policy_document
+ *   - bastion_role
+ *   - bastion_instance_profile
+ *   - bastion_iam_policy
+ *   - bastion_role_iam_policy_attachment
+ *   - bastion_eip
+ *   - bastion_launch_configuration
+ *   - bastion_asg
  */
 
 resource "aws_key_pair" "bastion_key_pair" {

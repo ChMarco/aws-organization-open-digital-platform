@@ -1,41 +1,40 @@
 /*
- * Module: Jenkins
+ * Module: BitBucket
  *
  * Components:
- *   - jenkins_key_pair
- *   - jenkins_security_group
- *   - jenkins_proxy_elb_security_group
- *   - jenkins_efs_security_group
- *   - jenkins_efs
- *   - jenkins_efs_mount_target
- *   - jenkins_elb
- *   - jenkins_proxy_elb
- *   - jenkins_assume_role_policy_document
- *   - jenkins_iam_policy_document
- *   - jenkins_role
- *   - jenkins_instance_profile
- *   - jenkins_iam_policy
- *   - jenkins_role_iam_policy_attachment
- *   - jenkins_launch_configuration
- *   - jenkins_asg
- *   - jenkins_ecs_cluster
- *   - jenkins_ecs_task
- *   - jenkins_proxy_ecs_task
- *   - jenkins_ecs_service
- *   - jenkins_proxy_ecs_service
+ *   - bitbucket_key_pair
+ *   - bitbucket_security_group
+ *   - bitbucket_elb_security_group
+ *   - bitbucket_rds_security_group
+ *   - bitbucket_efs_security_group
+ *   - bitbucket_efs
+ *   - bitbucket_efs_mount_target
+ *   - bitbucket_elb
+ *   - bitbucket_assume_role_policy_document
+ *   - bitbucket_iam_policy_document
+ *   - bitbucket_role
+ *   - bitbucket_instance_profile
+ *   - bitbucket_iam_policy
+ *   - bitbucket_role_iam_policy_attachment
+ *   - bitbucket_launch_configuration
+ *   - bitbucket_asg
+ *   - bitbucket_rds
+ *   - bitbucket_ecs_cluster
+ *   - bitbucket_ecs_task
+ *   - bitbucket_ecs_service
  */
 
-resource "aws_key_pair" "jenkins_key_pair" {
+resource "aws_key_pair" "bitbucket_key_pair" {
 
-  key_name = "${format("%s_jenkins",
+  key_name = "${format("%s_bitbucket",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
-  public_key = "${var.jenkins_public_key}"
+  public_key = "${var.bitbucket_public_key}"
 }
 
-resource "aws_security_group" "jenkins_security_group" {
+resource "aws_security_group" "bitbucket_security_group" {
 
-  name = "${format("%s_jenkins_ec2",
+  name = "${format("%s_bitbucket_ec2",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
   description = "${format("%s Jenkins Instances Security Group",
@@ -71,7 +70,7 @@ resource "aws_security_group" "jenkins_security_group" {
     protocol = "6"
     to_port = 22
     security_groups = [
-      "${var.jenkins_ssh_bastion_access}"
+      "${var.bitbucket_ssh_bastion_access}"
     ]
   }
 
@@ -79,17 +78,17 @@ resource "aws_security_group" "jenkins_security_group" {
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_ec2",
+            "Name", format("%s_bitbucket_ec2",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
             ),
-            "Service", "jenkins"
+            "Service", "bitbucket"
         )
     )}"
 }
 
-resource "aws_security_group" "jenkins_proxy_elb_security_group" {
+resource "aws_security_group" "bitbucket_elb_security_group" {
 
-  name = "${format("%s_jenkins_elb",
+  name = "${format("%s_bitbucket_elb",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
   description = "${format("%s Jenkins elb Security Group",
@@ -115,7 +114,7 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
       "${compact(
               split(",",
                   replace(
-                      join(",", values(var.jenkins_web_whitelist)),
+                      join(",", values(var.bitbucket_web_whitelist)),
                       "0.0.0.0/0",
                       ""
                   )
@@ -132,7 +131,7 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
       "${compact(
               split(",",
                   replace(
-                      join(",", values(var.jenkins_web_whitelist)),
+                      join(",", values(var.bitbucket_web_whitelist)),
                       "0.0.0.0/0",
                       ""
                   )
@@ -149,7 +148,7 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
       "${compact(
               split(",",
                   replace(
-                      join(",", values(var.jenkins_web_whitelist)),
+                      join(",", values(var.bitbucket_web_whitelist)),
                       "0.0.0.0/0",
                       ""
                   )
@@ -162,18 +161,18 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_elb",
+            "Name", format("%s_bitbucket_elb",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
             ),
-            "Service", "jenkins"
+            "Service", "bitbucket"
         )
     )}"
 
 }
 
-resource "aws_security_group" "jenkins_efs_security_group" {
+resource "aws_security_group" "bitbucket_efs_security_group" {
 
-  name = "${format("%s_jenkins_efs",
+  name = "${format("%s_bitbucket_efs",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
   description = "${format("%s Jenkins efs Security Group",
@@ -196,7 +195,7 @@ resource "aws_security_group" "jenkins_efs_security_group" {
     to_port = 2049
     protocol = "6"
     security_groups = [
-      "${aws_security_group.jenkins_security_group.id}"
+      "${aws_security_group.bitbucket_security_group.id}"
     ]
   }
 
@@ -204,15 +203,65 @@ resource "aws_security_group" "jenkins_efs_security_group" {
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_efs",
+            "Name", format("%s_bitbucket_efs",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
             ),
-            "Service", "jenkins"
+            "Service", "bitbucket"
         )
     )}"
 }
 
-resource "aws_efs_file_system" "jenkins_efs" {
+resource "aws_security_group" "bitbucket_rds_security_group" {
+
+  name = "${format("%s_bitbucket_rds",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+    )}"
+  description = "${format("%s Jenkins rds Security Group",
+        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
+    )}"
+
+  vpc_id = "${var.vpc_id}"
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+  }
+
+  ingress {
+    from_port = 5432
+    to_port = 5432
+    protocol = "6"
+    security_groups = [
+      "${aws_security_group.bitbucket_security_group.id}"
+    ]
+  }
+
+  ingress {
+    from_port = 5432
+    protocol = "6"
+    to_port = 5432
+    security_groups = [
+      "${var.bitbucket_ssh_bastion_access}"
+    ]
+  }
+
+  tags = "${merge(
+        var.base_aws_tags,
+        map(
+            "Environment", var.deploy_environment,
+            "Name", format("%s_bitbucket_rds",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            ),
+            "Service", "bitbucket"
+        )
+    )}"
+}
+
+resource "aws_efs_file_system" "bitbucket_efs" {
 
   performance_mode = "generalPurpose"
 
@@ -220,92 +269,38 @@ resource "aws_efs_file_system" "jenkins_efs" {
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_efs",
+            "Name", format("%s_bitbucket_efs",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
             ),
-            "Service", "jenkins"
+            "Service", "bitbucket"
         )
     )}"
 }
 
-resource "aws_efs_mount_target" "jenkins_efs_mount_target" {
+resource "aws_efs_mount_target" "bitbucket_efs_mount_target" {
 
-  count = "${length(split(",", var.jenkins_subnets))}"
+  count = "${length(split(",", var.bitbucket_subnets))}"
 
-  file_system_id = "${aws_efs_file_system.jenkins_efs.id}"
-  subnet_id = "${element(split(",", var.jenkins_subnets), count.index)}"
+  file_system_id = "${aws_efs_file_system.bitbucket_efs.id}"
+  subnet_id = "${element(split(",", var.bitbucket_subnets), count.index)}"
   security_groups = [
-    "${aws_security_group.jenkins_efs_security_group.id}"
+    "${aws_security_group.bitbucket_efs_security_group.id}"
   ]
 }
 
-resource "aws_elb" "jenkins_elb" {
+resource "aws_elb" "bitbucket_elb" {
 
-  name = "${format("%s-jenkins-elb",
+  name = "${format("%s-bitbucket-elb",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
 
   subnets = [
-    "${split(",", var.jenkins_subnets)}",
+    "${split(",", var.bitbucket_elb_subnets)}"
   ]
 
   security_groups = [
-    "${aws_security_group.jenkins_security_group.id}"
-  ]
-
-  internal = "true"
-  cross_zone_load_balancing = true
-  idle_timeout = 60
-  connection_draining = true
-  connection_draining_timeout = 300
-
-  listener {
-    instance_port = "8080"
-    instance_protocol = "tcp"
-    lb_port = "80"
-    lb_protocol = "tcp"
-  }
-
-  listener {
-    instance_port = "50000"
-    instance_protocol = "tcp"
-    lb_port = "50000"
-    lb_protocol = "tcp"
-  }
-
-  health_check {
-    healthy_threshold = 2
-    unhealthy_threshold = 5
-    timeout = 5
-    target = "HTTP:8080/"
-    interval = "30"
-  }
-
-  tags = "${merge(
-        var.base_aws_tags,
-        map(
-            "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_elb",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            ),
-            "Service", "jenkins"
-        )
-    )}"
-}
-
-resource "aws_elb" "jenkins_proxy_elb" {
-
-  name = "${format("%s-jenkins-proxy-elb",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-    )}"
-
-  subnets = [
-    "${split(",", var.jenkins_elb_subnets)}"
-  ]
-
-  security_groups = [
-    "${aws_security_group.jenkins_security_group.id}",
-    "${aws_security_group.jenkins_proxy_elb_security_group.id}"
+    "${aws_security_group.bitbucket_security_group.id}",
+    "${aws_security_group.bitbucket_elb_security_group.id}"
   ]
 
   cross_zone_load_balancing = true
@@ -314,9 +309,16 @@ resource "aws_elb" "jenkins_proxy_elb" {
   connection_draining_timeout = 300
 
   listener {
-    instance_port = "80"
+    instance_port = "7990"
     instance_protocol = "tcp"
     lb_port = "80"
+    lb_protocol = "tcp"
+  }
+
+  listener {
+    instance_port = "7999"
+    instance_protocol = "tcp"
+    lb_port = "7999"
     lb_protocol = "tcp"
   }
 
@@ -324,7 +326,7 @@ resource "aws_elb" "jenkins_proxy_elb" {
     healthy_threshold = 2
     unhealthy_threshold = 5
     timeout = 5
-    target = "HTTP:80/"
+    target = "HTTP:7990/status"
     interval = "30"
   }
 
@@ -332,15 +334,60 @@ resource "aws_elb" "jenkins_proxy_elb" {
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_proxy_elb",
+            "Name", format("%s_bitbucket_elb",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
             ),
-            "Service", "jenkins"
+            "Service", "bitbucket"
         )
     )}"
 }
 
-data "aws_iam_policy_document" "jenkins_assume_role_policy_document" {
+resource "aws_db_subnet_group" "bitbucket_rds_subnet_group" {
+
+  name = "bitbucket_rds"
+
+  description = "${format("%s Jenkins efs Security Group",
+        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
+    )}"
+
+  subnet_ids = [
+    "${split(",", var.bitbucket_rds_subnets)}"
+  ]
+
+  tags = "${merge(
+        var.base_aws_tags,
+        map(
+            "Environment", var.deploy_environment,
+            "Name", format("%s_bitbucket_rds",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            ),
+            "Service", "bitbucket"
+        )
+    )}"
+}
+
+resource "aws_db_instance" "bitbucket_rds" {
+
+  identifier = "bitbucket"
+
+  allocated_storage = "${var.rds_allocated_storage}"
+  multi_az = "${var.rds_is_multi_az}"
+  storage_type = "${var.rds_storage_type}"
+  engine = "${var.rds_engine}"
+  engine_version = "${var.rds_engine_version}"
+  instance_class = "${var.rds_instance_class}"
+  name = "${var.rds_name}"
+  username = "${var.rds_username}"
+  password = "${var.rds_password}"
+
+  vpc_security_group_ids = [
+    "${aws_security_group.bitbucket_rds_security_group.id}"
+  ]
+
+  db_subnet_group_name = "${aws_db_subnet_group.bitbucket_rds_subnet_group.name}"
+}
+
+data "aws_iam_policy_document" "bitbucket_assume_role_policy_document" {
 
   statement {
     actions = [
@@ -357,7 +404,7 @@ data "aws_iam_policy_document" "jenkins_assume_role_policy_document" {
   }
 }
 
-data "aws_iam_policy_document" "jenkins_iam_policy_document" {
+data "aws_iam_policy_document" "bitbucket_iam_policy_document" {
 
   statement {
     effect = "Allow"
@@ -445,72 +492,71 @@ data "aws_iam_policy_document" "jenkins_iam_policy_document" {
   }
 }
 
-resource "aws_iam_role" "jenkins_role" {
+resource "aws_iam_role" "bitbucket_role" {
 
-  name = "${format("%s_%s_jenkins",
+  name = "${format("%s_%s_bitbucket",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         var.aws_region
     )}"
-  assume_role_policy = "${data.aws_iam_policy_document.jenkins_assume_role_policy_document.json}"
+  assume_role_policy = "${data.aws_iam_policy_document.bitbucket_assume_role_policy_document.json}"
 }
 
-resource "aws_iam_instance_profile" "jenkins_instance_profile" {
+resource "aws_iam_instance_profile" "bitbucket_instance_profile" {
 
-  name = "${format("%s_%s_jenkins",
+  name = "${format("%s_%s_bitbucket",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         var.aws_region
     )}"
-  role = "${aws_iam_role.jenkins_role.name}"
+  role = "${aws_iam_role.bitbucket_role.name}"
 }
 
-resource "aws_iam_policy" "jenkins_iam_policy" {
+resource "aws_iam_policy" "bitbucket_iam_policy" {
 
-  name = "${format("%s_%s_jenkins",
+  name = "${format("%s_%s_bitbucket",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         var.aws_region
     )}"
-  policy = "${data.aws_iam_policy_document.jenkins_iam_policy_document.json}"
+  policy = "${data.aws_iam_policy_document.bitbucket_iam_policy_document.json}"
 }
 
-resource "aws_iam_role_policy_attachment" "jenkins_role_iam_policy_attachment" {
+resource "aws_iam_role_policy_attachment" "bitbucket_role_iam_policy_attachment" {
 
-  role = "${aws_iam_role.jenkins_role.name}"
-  policy_arn = "${aws_iam_policy.jenkins_iam_policy.arn}"
+  role = "${aws_iam_role.bitbucket_role.name}"
+  policy_arn = "${aws_iam_policy.bitbucket_iam_policy.arn}"
 }
 
 data "template_file" "user_data" {
   template = "${file("${path.module}/templates/user-data.tpl")}"
 
   vars {
-    efs_id = "${aws_efs_file_system.jenkins_efs.id}"
-    jenkins_elb_dns_name = "${aws_elb.jenkins_elb.dns_name}"
-    ecs_cluster_name = "${format("%s_jenkins_cluster",
+    efs_id = "${aws_efs_file_system.bitbucket_efs.id}"
+    ecs_cluster_name = "${format("%s_bitbucket_cluster",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
     aws_region = "${var.aws_region}"
   }
 }
 
-resource "aws_launch_configuration" "jenkins_launch_configuration" {
+resource "aws_launch_configuration" "bitbucket_launch_configuration" {
 
-  name_prefix = "${format("%s_jenkins_",
+  name_prefix = "${format("%s_bitbucket_",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
 
   image_id = "${coalesce(
         var.lc_ami_id,
-        lookup(var.jenkins_ami, var.aws_region)
+        lookup(var.bitbucket_ami, var.aws_region)
     )}"
   instance_type = "${var.lc_instance_type}"
   associate_public_ip_address = "${var.lc_associate_public_ip_address}"
-  key_name = "${aws_key_pair.jenkins_key_pair.key_name}"
+  key_name = "${aws_key_pair.bitbucket_key_pair.key_name}"
   security_groups = [
-    "${aws_security_group.jenkins_security_group.id}"
+    "${aws_security_group.bitbucket_security_group.id}"
   ]
 
   iam_instance_profile = "${coalesce(
         var.lc_iam_instance_profile,
-        aws_iam_instance_profile.jenkins_instance_profile.name
+        aws_iam_instance_profile.bitbucket_instance_profile.name
     )}"
 
   lifecycle {
@@ -526,12 +572,12 @@ resource "aws_launch_configuration" "jenkins_launch_configuration" {
   user_data = "${data.template_file.user_data.rendered}"
 }
 
-resource "aws_autoscaling_group" "jenkins_asg" {
+resource "aws_autoscaling_group" "bitbucket_asg" {
 
   vpc_zone_identifier = [
-    "${split(",", var.jenkins_subnets)}"
+    "${split(",", var.bitbucket_subnets)}"
   ]
-  name = "${format("%s_jenkins",
+  name = "${format("%s_bitbucket",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
 
@@ -541,14 +587,14 @@ resource "aws_autoscaling_group" "jenkins_asg" {
   health_check_grace_period = "${var.asg_health_check_grace_period}"
   health_check_type = "${var.asg_health_check_type}"
   force_delete = "${var.asg_force_delete}"
-  launch_configuration = "${aws_launch_configuration.jenkins_launch_configuration.name}"
+  launch_configuration = "${aws_launch_configuration.bitbucket_launch_configuration.name}"
   termination_policies = [
     "${var.asg_termination_policies}"
   ]
 
   tag {
     key = "Name"
-    value = "${format("%s_jenkins",
+    value = "${format("%s_bitbucket",
           lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
       )}"
     propagate_at_launch = true
@@ -565,74 +611,41 @@ resource "aws_autoscaling_group" "jenkins_asg" {
   }
 }
 
-data "template_file" "jenkins_task_template" {
-  template = "${file("${path.module}/templates/jenkins.json.tpl")}"
+data "template_file" "bitbucket_task_template" {
+  template = "${file("${path.module}/templates/bitbucket.json.tpl")}"
 }
 
-data "template_file" "jenkins_proxy_task_template" {
-  template = "${file("${path.module}/templates/jenkins_proxy.json.tpl")}"
-}
-
-resource "aws_ecs_cluster" "jenkins_ecs_cluster" {
-  name = "${format("%s_jenkins_cluster",
+resource "aws_ecs_cluster" "bitbucket_ecs_cluster" {
+  name = "${format("%s_bitbucket_cluster",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
 }
 
-resource "aws_ecs_task_definition" "jenkins_ecs_task" {
-  family = "jenkins"
-  container_definitions = "${data.template_file.jenkins_task_template.rendered}"
+resource "aws_ecs_task_definition" "bitbucket_ecs_task" {
+  family = "bitbucket"
+  container_definitions = "${data.template_file.bitbucket_task_template.rendered}"
 
   volume {
-    name = "efs-jenkins"
-    host_path = "/mnt/efs"
+    name = "efs-bitbucket"
+    host_path = "/var/bitbucket"
   }
 }
 
-resource "aws_ecs_task_definition" "jenkins_proxy_ecs_task" {
-  family = "jenkins_proxy"
-  container_definitions = "${data.template_file.jenkins_proxy_task_template.rendered}"
-
-  volume {
-    name = "nginx-conf"
-    host_path = "/etc/nginx/nginx.conf"
-  }
-}
-
-resource "aws_ecs_service" "jenkins_ecs_service" {
-  name = "jenkins"
-  cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.jenkins_ecs_task.arn}"
+resource "aws_ecs_service" "bitbucket_ecs_service" {
+  name = "bitbucket"
+  cluster = "${aws_ecs_cluster.bitbucket_ecs_cluster.id}"
+  task_definition = "${aws_ecs_task_definition.bitbucket_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"
 
-  iam_role = "${aws_iam_role.jenkins_role.arn}"
+  iam_role = "${aws_iam_role.bitbucket_role.arn}"
 
   load_balancer {
-    elb_name = "${aws_elb.jenkins_elb.name}"
-    container_name = "jenkins"
-    container_port = 8080
+    elb_name = "${aws_elb.bitbucket_elb.name}"
+    container_name = "bitbucket"
+    container_port = 7990
   }
 
   depends_on = [
-    "aws_autoscaling_group.jenkins_asg"
-  ]
-}
-
-resource "aws_ecs_service" "jenkins_proxy_ecs_service" {
-  name = "jenkins_proxy"
-  cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.jenkins_proxy_ecs_task.arn}"
-  desired_count = "${var.service_desired_count}"
-
-  iam_role = "${aws_iam_role.jenkins_role.arn}"
-
-  load_balancer {
-    elb_name = "${aws_elb.jenkins_proxy_elb.name}"
-    container_name = "nginx"
-    container_port = 80
-  }
-
-  depends_on = [
-    "aws_autoscaling_group.jenkins_asg"
+    "aws_autoscaling_group.bitbucket_asg"
   ]
 }
