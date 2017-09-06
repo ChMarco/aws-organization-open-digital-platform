@@ -380,6 +380,8 @@ resource "aws_db_instance" "bitbucket_rds" {
   username = "${var.rds_username}"
   password = "${var.rds_password}"
 
+  skip_final_snapshot = "true"
+
   vpc_security_group_ids = [
     "${aws_security_group.bitbucket_rds_security_group.id}"
   ]

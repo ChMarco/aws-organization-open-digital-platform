@@ -1,5 +1,5 @@
 aws_region = "eu-west-1"
-deploy_environment = "Test"
+deploy_environment = "Stage"
 
 vpc_description = "Management VPC"
 vpc_shortname = "ManagementVPC"
@@ -27,3 +27,19 @@ bitbucket_web_whitelist = {
   headoffice = "156.109.18.122/32",
   headoffice2 = "81.157.227.241/32",
 }
+
+artifactory_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIa/BQQ0obYuEJasZVtyTnjSsm3BxIXCbHBfGenJvfnmAy75Mt9r+70COVBiNDA2DCTWQkQTRvHn3AzyapWH5Q/bLPOjxBpvH1zHM/Fu6CjOjesuYoDNj6307hCOpr7xiMXm+WqlqaMH1eRwHCTJ+FNBaqjXbosspscF0SyEnk5w0JNXiGAXsx2m6YjyQvSYza0gJ4HixVQZcCUYzjAzqV1Dgj8dzfYl+YVA9bTTq+8aOMYGA75Zre6fH6rQg+Br0O7B/ytvStyI7OCRZLY84k58ugrFabXUWGis+ZtxIjFA1n59nybKpwDAGrEzXF4h4xbj4OHomn2h90jJPC8ZOX mohammed@moh-abks-MacBook.local"
+artifactory_web_whitelist = {
+  headoffice = "156.109.18.122/32",
+  headoffice2 = "81.157.227.241/32",
+}
+
+jenkins_codebuild_name = "Jenkins"
+jenkins_codebuild_ecr = "633665859024.dkr.ecr.eu-west-1.amazonaws.com"
+jenkins_codebuild_repo = "jenkins"
+jenkins_image_name = "jenkins"
+
+jenkins_slave_codebuild_name = "Jenkins-Slave"
+jenkins_slave_codebuild_ecr = "633665859024.dkr.ecr.eu-west-1.amazonaws.com"
+jenkins_slave_codebuild_repo = "jenkins-slave"
+jenkins_slave_image_name = "jenkins-slave"
