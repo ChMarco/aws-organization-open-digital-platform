@@ -18,7 +18,7 @@ node('jenkins-linux-slave') {
        stage ('init') {
           ansiColor('xterm') {
               sh ('''
-              cd infrastructure/terraform/infrastructure/management-account
+              cd infrastructure/terraform/infrastructure/management-infrastructure
               terraform init -backend-config="key=terraform-state/management-${ENVIRONMENT}.tfstate"
               ''')
           }
@@ -26,7 +26,7 @@ node('jenkins-linux-slave') {
        stage ('get') {
           ansiColor('xterm') {
               sh ('''
-              cd infrastructure/terraform/infrastructure/management-account
+              cd infrastructure/terraform/infrastructure/management-infrastructure
               terraform get
               ''')
           }
@@ -34,7 +34,7 @@ node('jenkins-linux-slave') {
        stage ('plan') {
           ansiColor('xterm') {
               sh ('''
-              cd infrastructure/terraform/infrastructure/management-account
+              cd infrastructure/terraform/infrastructure/management-infrastructure
               terraform plan -var-file="${ENVIRONMENT}/config.tfvars"
               ''')
           }
@@ -47,7 +47,7 @@ node('jenkins-linux-slave') {
        stage ('apply') {
           ansiColor('xterm') {
               sh ('''
-              cd infrastructure/terraform/infrastructure/management-account
+              cd infrastructure/terraform/infrastructure/management-infrastructure
               terraform apply -var-file="${ENVIRONMENT}/config.tfvars"
               ''')
           }
