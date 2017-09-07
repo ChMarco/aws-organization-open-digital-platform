@@ -37,7 +37,7 @@ resource "aws_security_group" "bitbucket_security_group" {
   name = "${format("%s_bitbucket_ec2",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
-  description = "${format("%s Jenkins Instances Security Group",
+  description = "${format("%s BitBucket Instances Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
     )}"
   vpc_id = "${var.vpc_id}"
@@ -91,7 +91,7 @@ resource "aws_security_group" "bitbucket_elb_security_group" {
   name = "${format("%s_bitbucket_elb",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
-  description = "${format("%s Jenkins elb Security Group",
+  description = "${format("%s BitBucket elb Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
     )}"
 
@@ -175,7 +175,7 @@ resource "aws_security_group" "bitbucket_efs_security_group" {
   name = "${format("%s_bitbucket_efs",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
-  description = "${format("%s Jenkins efs Security Group",
+  description = "${format("%s BitBucket efs Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
     )}"
 
@@ -216,7 +216,7 @@ resource "aws_security_group" "bitbucket_rds_security_group" {
   name = "${format("%s_bitbucket_rds",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
-  description = "${format("%s Jenkins rds Security Group",
+  description = "${format("%s BitBucket rds Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
     )}"
 
@@ -346,7 +346,7 @@ resource "aws_db_subnet_group" "bitbucket_rds_subnet_group" {
 
   name = "bitbucket_rds"
 
-  description = "${format("%s Jenkins efs Security Group",
+  description = "${format("%s BitBucket efs Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
     )}"
 

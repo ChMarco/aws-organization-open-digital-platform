@@ -87,12 +87,58 @@ resource "aws_security_group" "jenkins_security_group" {
     )}"
 }
 
-resource "aws_security_group" "jenkins_proxy_elb_security_group" {
+resource "aws_security_group" "jenkins_elb_security_group" {
 
   name = "${format("%s_jenkins_elb",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
   description = "${format("%s Jenkins elb Security Group",
+        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
+    )}"
+
+  vpc_id = "${var.vpc_id}"
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+  }
+
+  ingress {
+    from_port = 50000
+    to_port = 50000
+    protocol = "6"
+    security_groups = [
+      "${aws_security_group.jenkins_security_group.id}"
+    ]
+  }
+
+  tags = "${merge(
+        var.base_aws_tags,
+        map(
+            "Environment", var.deploy_environment,
+            "Name", format("%s_jenkins_elb",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            ),
+            "Service", "jenkins"
+        )
+    )}"
+
+  lifecycle {
+    create_before_destroy = "true"
+  }
+
+}
+
+resource "aws_security_group" "jenkins_proxy_elb_security_group" {
+
+  name = "${format("%s_jenkins_proxy_elb",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+    )}"
+  description = "${format("%s Jenkins proxy elb Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
     )}"
 
@@ -141,33 +187,20 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
     ]
   }
 
-  ingress {
-    from_port = 50000
-    protocol = "6"
-    to_port = 50000
-    cidr_blocks = [
-      "${compact(
-              split(",",
-                  replace(
-                      join(",", values(var.jenkins_web_whitelist)),
-                      "0.0.0.0/0",
-                      ""
-                  )
-              )
-          )}"
-    ]
-  }
-
   tags = "${merge(
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_elb",
+            "Name", format("%s_jenkins_proxy_elb",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
             ),
             "Service", "jenkins"
         )
     )}"
+
+  lifecycle {
+    create_before_destroy = "true"
+  }
 
 }
 
@@ -250,7 +283,8 @@ resource "aws_elb" "jenkins_elb" {
   ]
 
   security_groups = [
-    "${aws_security_group.jenkins_security_group.id}"
+    "${aws_security_group.jenkins_security_group.id}",
+    "${aws_security_group.jenkins_elb_security_group.id}"
   ]
 
   internal = "true"
