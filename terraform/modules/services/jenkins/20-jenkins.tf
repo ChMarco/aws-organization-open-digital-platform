@@ -384,7 +384,8 @@ data "aws_iam_policy_document" "jenkins_assume_role_policy_document" {
       type = "Service"
       identifiers = [
         "ec2.amazonaws.com",
-        "ecs.amazonaws.com"
+        "ecs.amazonaws.com",
+        "ecs-tasks.amazonaws.com"
       ]
     }
     effect = "Allow"
@@ -398,7 +399,9 @@ data "aws_iam_policy_document" "jenkins_iam_policy_document" {
     actions = [
       "ec2:CreateTags",
       "ec2:Describe*",
-      "autoscaling:Describe*"
+      "autoscaling:Describe*",
+      "iam:PassRole",
+      "s3:*"
     ]
     resources = [
       "*"
@@ -424,7 +427,7 @@ data "aws_iam_policy_document" "jenkins_iam_policy_document" {
       "logs:CreateLogStream",
       "logs:DescribeLogGroups",
       "logs:DescribeLogStreams",
-      "logs:PutLogEvents"
+      "logs:PutLogEvents",
     ]
     resources = [
       "*"
