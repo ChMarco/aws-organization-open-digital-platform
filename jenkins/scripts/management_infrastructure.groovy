@@ -56,7 +56,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              terraform output -json > ${ENVIRONMENT}/outputs.json
+              terraform output -json > ${ENVIRONMENT}/${ENVIRONMENT}-outputs.json
               aws s3 cp ${ENVIRONMENT}/outputs.json s3://adidas-terraform/terraform-outputs/
               ''')
           }

@@ -17,3 +17,7 @@ output "jenkins_outputs" {
 //output "bitbucket_outputs" {
 //  value = "${module.bitbucket.bitbucket_outputs}"
 //}
+
+//output "openvpn_outputs" {
+//  value = "${module.openvpn.openvpn_outputs}"
+//}
