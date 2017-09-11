@@ -57,7 +57,7 @@ node('jenkins-linux-slave') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
               terraform output -json > ${ENVIRONMENT}/${ENVIRONMENT}-outputs.json
-              aws s3 cp ${ENVIRONMENT}/outputs.json s3://adidas-terraform/terraform-outputs/
+              aws s3 cp ${ENVIRONMENT}/management-${ENVIRONMENT}-outputs.json s3://adidas-terraform/terraform-outputs/
               ''')
           }
        }
