@@ -26,7 +26,7 @@ resource "aws_vpc" "vpc" {
         var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_dmz_%s",
+            "Name", format("%s_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names, count.index)
             )
@@ -90,7 +90,8 @@ resource "aws_subnet" "dmz_subnet" {
             "Name", format("%s_dmz_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names , count.index)
-            )
+            ),
+        "Network", "DMZ"
         )
     )}"
 }
@@ -112,7 +113,8 @@ resource "aws_subnet" "public_subnet" {
             "Name", format("%s_public_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names , count.index)
-            )
+            ),
+            "Network", "Public"
         )
     )}"
 }
@@ -134,7 +136,8 @@ resource "aws_subnet" "private_subnet" {
             "Name", format("%s_private_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names , count.index)
-            )
+            ),
+        "Network", "Private"
         )
     )}"
 }
@@ -158,7 +161,8 @@ resource "aws_route_table" "dmz_subnet_rt" {
             "Name", format("%s_dmz_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names, count.index)
-            )
+            ),
+            "Network", "DMZ"
         )
     )}"
 }
@@ -187,7 +191,8 @@ resource "aws_route_table" "public_subnet_rt" {
             "Name", format("%s_public_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names, count.index)
-            )
+            ),
+            "Network", "Public"
         )
     )}"
 }
@@ -215,7 +220,8 @@ resource "aws_route_table" "private_subnet_rt" {
             "Name", format("%s_private_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names, count.index)
-            )
+            ),
+            "Network", "Private"
         )
     )}"
 }
@@ -247,7 +253,7 @@ resource "aws_route" "public_egress" {
   route_table_id = "${element(aws_route_table.public_subnet_rt.*.id, count.index)}"
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id = "${element(aws_nat_gateway.natgw.*.id, count.index)}"
-//
+  //
   depends_on = [
     "aws_route_table.public_subnet_rt"
   ]

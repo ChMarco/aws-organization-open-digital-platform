@@ -1,9 +1,15 @@
-data "aws_caller_identity" "current" {}
+data "null_data_source" "vpc_defaults" {
+  inputs = {
+    name_prefix = "${format("%s",
+            var.vpc_shortname
+        )}"
+  }
+}
 
 data "aws_subnet_ids" "mgmt_subnets" {
 
   count = "${length(split(",", var.networks))}"
-  vpc_id = "${lookup(module.vpc.vpc_outputs, "vpc_id")}"
+  vpc_id = "${var.mgmt_vpc_id}"
 
   tags {
     Network = "${element(split(",", var.networks), count.index)}"
