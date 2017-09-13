@@ -53,6 +53,6 @@ function destroy {
 
 function output {
     source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
-    terraform output -json > ${ENVIRONMENT}/${STACK}-${ENVIRONMENT}-outputs.json
+    terraform output -json > ${CONFIG_FROM_STACK}/${ENVIRONMENT}/${STACK}-${ENVIRONMENT}-outputs.json
     aws s3 cp ${CONFIG_FROM_STACK}/${ENVIRONMENT}/${STACK}-${ENVIRONMENT}-outputs.json s3://${BUCKET}/terraform-outputs/
 }
