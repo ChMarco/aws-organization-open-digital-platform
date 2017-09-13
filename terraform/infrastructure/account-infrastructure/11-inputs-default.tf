@@ -1,0 +1,1 @@
+variable "networks" { default = "DMZ,Private,Public" }

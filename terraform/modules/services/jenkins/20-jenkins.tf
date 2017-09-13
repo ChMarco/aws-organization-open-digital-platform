@@ -263,7 +263,7 @@ resource "aws_efs_file_system" "jenkins_efs" {
 
 resource "aws_efs_mount_target" "jenkins_efs_mount_target" {
 
-  count = "${length(split(",", var.jenkins_subnets))}"
+  count = "${length(data.aws_availability_zones.available.names)}"
 
   file_system_id = "${aws_efs_file_system.jenkins_efs.id}"
   subnet_id = "${element(split(",", var.jenkins_subnets), count.index)}"
