@@ -15,6 +15,14 @@ node('jenkins-linux-slave') {
     }
 
     withEnv(["REGION=${REGION}", "ENVIRONMENT=${ENVIRONMENT}"]) {
+       stage ('creds') {
+          ansiColor('xterm') {
+              sh ('''
+              cd infrastructure/terraform/infrastructure/management-infrastructure
+              ./aws_creds.sh ${AWS_ACCESS_KEY} ${AWS_SECRET_ACCESS_KEY}
+              ''')
+          }
+       }
        stage ('init') {
           ansiColor('xterm') {
               sh ('''
