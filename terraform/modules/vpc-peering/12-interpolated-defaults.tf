@@ -36,27 +36,3 @@ data "aws_route_table" "mgmt_public_route_tables" {
   subnet_id = "${element(data.aws_subnet_ids.mgmt_subnets.2.ids, count.index)}"
 
 }
-
-output "mgmt_dmz_subnets" {
-  value = "${data.aws_subnet_ids.mgmt_subnets.0.ids}"
-}
-
-output "mgmt_private_subnets" {
-  value = "${data.aws_subnet_ids.mgmt_subnets.1.ids}"
-}
-
-output "mgmt_public_subnets" {
-  value = "${data.aws_subnet_ids.mgmt_subnets.2.ids}"
-}
-
-output "mgmt_dmz_route_tables" {
-  value = "${data.aws_route_table.mgmt_dmz_route_tables.*.route_table_id}"
-}
-
-output "mgmt_public_route_tables" {
-  value = "${data.aws_route_table.mgmt_private_route_tables.*.route_table_id}"
-}
-
-output "mgmt_private_route_tables" {
-  value = "${data.aws_route_table.mgmt_public_route_tables.*.route_table_id}"
-}
