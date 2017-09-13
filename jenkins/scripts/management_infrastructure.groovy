@@ -18,7 +18,7 @@ node('jenkins-linux-slave') {
        stage ('creds') {
           ansiColor('xterm') {
               sh ('''
-              cd infrastructure/terraform/infrastructure/management-infrastructure
+              cd infrastructure/terraform/infrastructure
               ./aws_creds.sh ${AWS_ACCESS_KEY} ${AWS_SECRET_ACCESS_KEY}
               ''')
           }
