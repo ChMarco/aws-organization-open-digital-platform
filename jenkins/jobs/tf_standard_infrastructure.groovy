@@ -1,10 +1,11 @@
-pipelineJob('tf_management_infrastructure') {
+pipelineJob('tf_standard_infrastructure') {
     parameters {
       stringParam('ACCOUNT_ID', '', 'AWS Account ID')
-      stringParam('ACCOUNT_ACCESS_KEY', '', 'AWS Account Root User Access Key')
-      stringParam('ACCOUNT_SECRET_KEY', '', 'AWS Account Root User Secret Key')
+      stringParam('ACCOUNT_PROFILE', '', 'AWS Account PROFILE')
       stringParam('ENVIRONMENT', 'test', 'Infrastructure Environment')
-      stringParam('REGION', 'eu-west-1', 'AWS Region')
+      stringParam('STATE_BUCKET', '', 'S3 Bucket for TF State')
+      stringParam('STATE_BUCKET_REGION', 'eu-west-1', 'AWS Region')
+      stringParam('STACK', 'demo', 'Stack to deploy')
       stringParam('BRANCH', 'develop', 'Repo Branch')
     }
     definition {

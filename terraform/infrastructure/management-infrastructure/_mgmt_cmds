@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+COMMANDS=$(cat _mgmt_cmds | grep "^function" | awk '{print $2}' | grep -v "^_" | tr "\n" " " )
+ENVIRONMENTS=$(\ls -d */ | tr "\n" " ")
+APPLY_PLAN="apply.tfplan"
+DESTROY_PLAN="destroy.tfplan"
+STACK="management"
+
+function _debug {
+    echo "${ACCOUNT_ID}" "${PROFILE}" "${ENVIRONMENT}" "${BUCKET}" "${BUCKET_REGION}" "${COMMAND}"
+}
+
+function init {
+    source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
+    terraform init \
+        -backend-config="bucket=${BUCKET}" \
+        -backend-config="key=terraform-state/${STACK}-${ENVIRONMENT}.tfstate" \
+        -backend-config="region=${BUCKET_REGION}" \
+        -backend-config="encrypt=true"
+}
+
+function get {
+    source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
+    terraform get "$@"
+}
+
+function plan {
+    source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
+    terraform plan \
+        -var-file "${ENVIRONMENT}/config.tfvars" \
+        -out "${APPLY_PLAN}" \
+        "$@"
+}
+
+function apply {
+    source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
+    terraform apply "$@" "${APPLY_PLAN}"
+}
+
+function plan_destroy {
+    source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
+    terraform plan -destroy \
+        -var-file "${ENVIRONMENT}/config.tfvars" \
+        -out "${DESTROY_PLAN}" \
+        "$@"
+}
+
+function destroy {
+    source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
+    terraform apply "$@" "${DESTROY_PLAN}"
+}
+
+function output {
+    source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
+    terraform output -json > ${ENVIRONMENT}/${ENVIRONMENT}-outputs.json
+    aws s3 cp ${ENVIRONMENT}/management-${ENVIRONMENT}-outputs.json s3://${BUCKET}/terraform-outputs/
+}

@@ -19,7 +19,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              terraform init -backend-config="key=terraform-state/standard-${ENVIRONMENT}.tfstate"
+              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} init
               ''')
           }
        }
@@ -27,7 +27,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              terraform get
+              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} get
               ''')
           }
        }
@@ -35,7 +35,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              terraform plan -var-file="${ENVIRONMENT}/config.tfvars"
+              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} plan
               ''')
           }
        }
@@ -48,7 +48,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              terraform apply -var-file="${ENVIRONMENT}/config.tfvars"
+              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} apply
               ''')
           }
        }
@@ -56,8 +56,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              terraform output -json > ${ENVIRONMENT}/${ENVIRONMENT}-outputs.json
-              aws s3 cp ${ENVIRONMENT}/standard-${ENVIRONMENT}-outputs.json s3://adidas-terraform/terraform-outputs/
+              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} output
               ''')
           }
        }

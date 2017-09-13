@@ -19,7 +19,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              terraform init -backend-config="key=terraform-state/management-${ENVIRONMENT}.tfstate"
+              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} init
               ''')
           }
        }
@@ -27,7 +27,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              terraform get
+              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} get
               ''')
           }
        }
@@ -35,7 +35,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              terraform plan -var-file="${ENVIRONMENT}/config.tfvars"
+              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} plan
               ''')
           }
        }
@@ -48,7 +48,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              terraform apply -var-file="${ENVIRONMENT}/config.tfvars"
+              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply
               ''')
           }
        }
@@ -56,8 +56,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              terraform output -json > ${ENVIRONMENT}/${ENVIRONMENT}-outputs.json
-              aws s3 cp ${ENVIRONMENT}/management-${ENVIRONMENT}-outputs.json s3://adidas-terraform/terraform-outputs/
+              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} output
               ''')
           }
        }
