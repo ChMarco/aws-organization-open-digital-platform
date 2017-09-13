@@ -40,6 +40,3 @@ variable "bitbucket_web_whitelist" { type = "map" }
 # Artifactory
 variable "artifactory_public_key" {}
 variable "artifactory_web_whitelist" { type = "map" }
-
-# Consul
-variable "consul_public_key" {}
