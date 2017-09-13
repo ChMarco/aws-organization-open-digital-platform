@@ -40,7 +40,7 @@ function apply {
 function plan_destroy {
     source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
     terraform plan -destroy \
-        -var-file "${CONFIG_FROM_TENANT}/${ENVIRONMENT}/${STACK}.tfvars" \
+        -var-file "${CONFIG_FROM_STACK}/${ENVIRONMENT}/${STACK}.tfvars" \
         -out "${DESTROY_PLAN}" \
         "$@"
 }
