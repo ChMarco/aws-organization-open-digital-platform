@@ -1,5 +1,5 @@
 node('jenkins-linux-slave') {
-    currentBuild.displayName = "account: ${ACCOUNT_ID}"
+    currentBuild.displayName = "account: ${ACCOUNT_ID}-${STACK}-${ENVIRONMENT}"
     currentBuild.description = "Provisioning Standard Infrastructure"
 
 
