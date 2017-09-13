@@ -41,6 +41,14 @@ RUN cd /usr/src && \
     ./configure && \
     make altinstall
 
+RUN apt-get -y -qq update && \
+	apt-get install -y -qq curl && \
+	apt-get clean
+#
+# install jq to parse json within bash scripts
+RUN curl -o /usr/local/bin/jq http://stedolan.github.io/jq/download/linux64/jq && \
+  chmod +x /usr/local/bin/jq
+
 RUN pip install awscli==${AWS_VERSION} ansible==${ANSIBLE_VERSION} pycparser==${PYPARSER_VERSION} azure==${AZURE_VERSION} msrestazure ansible-lint behave selenium testinfra pywinrm
 
 RUN curl -fsSL https://get.docker.com/ | sed "s/docker-engine/docker-engine-${DOCKER_ENGINE_VERSION}/" | sh
