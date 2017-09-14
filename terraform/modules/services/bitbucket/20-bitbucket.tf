@@ -332,9 +332,9 @@ resource "aws_elb" "bitbucket_elb" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
-            "Name", format("%s_bitbucket_elb",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s-bitbucket-%s",
+                  lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                  lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"

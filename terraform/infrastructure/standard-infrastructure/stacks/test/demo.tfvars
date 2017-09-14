@@ -2,7 +2,7 @@ aws_region = "eu-west-1"
 deploy_environment = "Test"
 
 vpc_description = "Standard VPC"
-vpc_shortname = "StandardVPC"
+vpc_shortname = "Demo"
 vpc_cidr_block = "10.1.0.0/16"
 dmz_subnet_cidr_blocks = "10.1.128.0/20,10.1.144.0/20,10.1.160.0/20"
 public_subnet_cidr_blocks = "10.1.0.0/19,10.1.32.0/19,10.1.64.0/19"

@@ -190,8 +190,9 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s_jenkins_proxy_elb",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_jenkins_proxy_elb_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -271,7 +272,7 @@ resource "aws_efs_mount_target" "jenkins_efs_mount_target" {
 
 resource "aws_elb" "jenkins_elb" {
 
-  name = "${format("%s-jenkins-elb-%s",
+  name = "${format("%s-jenkins-%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
@@ -314,10 +315,11 @@ resource "aws_elb" "jenkins_elb" {
   }
 
   tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_elb",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s-jenkins-%s",
+                  lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                  lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -362,8 +364,9 @@ resource "aws_elb" "jenkins_proxy_elb" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s_jenkins_proxy_elb",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s-jenkins-proxy-%s",
+                  lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                  lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -697,6 +700,7 @@ resource "aws_ecs_service" "jenkins_ecs_service" {
   }
 
   depends_on = [
+    "aws_elb.jenkins_elb",
     "aws_autoscaling_group.jenkins_asg"
   ]
 }
@@ -720,6 +724,7 @@ resource "aws_ecs_service" "jenkins_proxy_ecs_service" {
   }
 
   depends_on = [
+    "aws_elb.jenkins_proxy_elb",
     "aws_autoscaling_group.jenkins_asg"
   ]
 }
