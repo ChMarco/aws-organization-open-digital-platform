@@ -14,7 +14,7 @@ node('jenkins-linux-slave') {
         ])
     }
 
-    withEnv(["REGION=${REGION}", "ENVIRONMENT=${ENVIRONMENT}"]) {
+    withEnv(["REGION=${STATE_BUCKET_REGION}", "ENVIRONMENT=${ENVIRONMENT}"]) {
        stage ('fetch_credentials') {
           ansiColor('xterm') {
               sh ('''
