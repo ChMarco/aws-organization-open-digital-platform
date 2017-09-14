@@ -1,4 +1,4 @@
-pipelineJob('terraform/tf_standard_infrastructure') {
+pipelineJob('infrastructure/tf_standard_infrastructure') {
     parameters {
       stringParam('ACCOUNT_ID', '', 'AWS Account ID')
       stringParam('ACCOUNT_PROFILE', 'adidas', 'AWS Account PROFILE')
