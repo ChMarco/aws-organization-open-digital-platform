@@ -5,7 +5,7 @@ listView('infrastructure/terraform') {
     filterBuildQueue()
     filterExecutors()
     jobs {
-        regex(/wa2.terraform.*/)
+        regex(/tf_*.groovy/)
     }
     columns {
         status()
