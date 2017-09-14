@@ -589,8 +589,9 @@ resource "aws_autoscaling_group" "jenkins_asg" {
 
   tag {
     key = "Name"
-    value = "${format("%s_jenkins",
-          lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+    value = "${format("%s_jenkins_%s",
+          lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+          lookup(data.null_data_source.tag_defaults.inputs, "Environment")
       )}"
     propagate_at_launch = true
   }
