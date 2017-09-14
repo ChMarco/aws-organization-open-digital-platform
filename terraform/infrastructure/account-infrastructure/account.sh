@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. _mgmt_cmds
+. _account_cmds
 
 set -o errexit
 set -o nounset

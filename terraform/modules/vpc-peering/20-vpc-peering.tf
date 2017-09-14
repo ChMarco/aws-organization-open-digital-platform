@@ -16,9 +16,8 @@ resource "aws_vpc_peering_connection" "vpc_peering_connection" {
   auto_accept = true
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_%sVPC Peering",
                 var.vpc_shortname,
                 var.mgmt_vpc_shortname

@@ -15,7 +15,7 @@ resource "aws_ecr_repository" "ecr_repository" {
 
 resource "aws_iam_role" "codebuild_role" {
   name = "${format("%s_%s_codebuild-role",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        data.aws_caller_identity.current.account_id,
         var.aws_region
     )}_${var.codebuild_repo}"
   assume_role_policy = <<EOF
@@ -36,7 +36,7 @@ EOF
 
 resource "aws_iam_policy" "codebuild_policy" {
   name = "${format("%s_%s_codebuild-policy",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        data.aws_caller_identity.current.account_id,
         var.aws_region
     )}_${var.codebuild_repo}"
 
@@ -67,7 +67,7 @@ POLICY
 
 resource "aws_iam_policy_attachment" "codebuild_policy_attachment" {
   name = "${format("%s_%s_codebuild-policy-attachment",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        data.aws_caller_identity.current.account_id,
         var.aws_region
     )}_${var.codebuild_repo}"
   policy_arn = "${aws_iam_policy.codebuild_policy.arn}"

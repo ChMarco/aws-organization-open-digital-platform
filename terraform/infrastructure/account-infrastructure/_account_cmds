@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-COMMANDS=$(cat _mgmt_cmds | grep "^function" | awk '{print $2}' | grep -v "^_" | tr "\n" " " )
+COMMANDS=$(cat _account_cmds | grep "^function" | awk '{print $2}' | grep -v "^_" | tr "\n" " " )
 APPLY_PLAN="apply.tfplan"
 DESTROY_PLAN="destroy.tfplan"
-STACK="management"
+STACK="account"
 
 function _debug {
     echo "${ACCOUNT_ID}" "${PROFILE}" "${BUCKET}" "${BUCKET_REGION}" "${COMMAND}"
@@ -51,6 +51,6 @@ function destroy {
 
 function output {
     source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
-    terraform output -json > management-${ACCOUNT_ID}-outputs.json
-    aws s3 cp management-${ENVIRONMENT}-outputs.json s3://${BUCKET}/terraform-outputs/
+    terraform output -json > account-${ACCOUNT_ID}-outputs.json
+    aws s3 cp account-${ENVIRONMENT}-outputs.json s3://${BUCKET}/terraform-outputs/
 }

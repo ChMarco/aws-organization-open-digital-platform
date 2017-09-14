@@ -1,11 +1,3 @@
-variable "base_aws_tags" {
-  type = "map"
-  default = {
-    Role = "Jenkins"
-    Created_By = "Terraform"
-  }
-}
-
 variable "lc_associate_public_ip_address" { default = "false" }
 variable "lc_ami_id" { default = "" }
 variable "lc_instance_type" { default = "t2.medium" }

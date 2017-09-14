@@ -17,10 +17,7 @@ data "null_data_source" "debug_outputs" {
     enable_dns_support = "${var.enable_dns_support}"
     enable_dns_hostnames = "${var.enable_dns_hostnames}"
     name_prefix = "${lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")}"
-    base_aws_tags = "${format("%s|%s",
-            join(",", keys(var.base_aws_tags)),
-            join(",", values(var.base_aws_tags))
-        )}"
+    base_aws_tags = "${data.null_data_source.tag_defaults.inputs}"
   }
 }
 

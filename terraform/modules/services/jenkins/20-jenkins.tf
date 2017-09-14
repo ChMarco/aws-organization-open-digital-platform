@@ -27,16 +27,18 @@
 
 resource "aws_key_pair" "jenkins_key_pair" {
 
-  key_name = "${format("%s_jenkins",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  key_name = "${format("%s_jenkins_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
   public_key = "${var.jenkins_public_key}"
 }
 
 resource "aws_security_group" "jenkins_security_group" {
 
-  name = "${format("%s_jenkins_ec2",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name = "${format("%s_jenkins_ec2_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
   description = "${format("%s Jenkins Instances Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
@@ -76,21 +78,20 @@ resource "aws_security_group" "jenkins_security_group" {
   }
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_jenkins_ec2",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            ),
-            "Service", "jenkins"
+            )
         )
     )}"
 }
 
 resource "aws_security_group" "jenkins_elb_security_group" {
 
-  name = "${format("%s_jenkins_elb",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name = "${format("%s_jenkins_elb_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
   description = "${format("%s Jenkins elb Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
@@ -117,13 +118,11 @@ resource "aws_security_group" "jenkins_elb_security_group" {
   }
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_jenkins_elb",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            ),
-            "Service", "jenkins"
+            )
         )
     )}"
 
@@ -135,8 +134,9 @@ resource "aws_security_group" "jenkins_elb_security_group" {
 
 resource "aws_security_group" "jenkins_proxy_elb_security_group" {
 
-  name = "${format("%s_jenkins_proxy_elb",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name = "${format("%s_jenkins_proxy_elb_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
   description = "${format("%s Jenkins proxy elb Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
@@ -188,13 +188,11 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
   }
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_jenkins_proxy_elb",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            ),
-            "Service", "jenkins"
+            )
         )
     )}"
 
@@ -206,8 +204,9 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
 
 resource "aws_security_group" "jenkins_efs_security_group" {
 
-  name = "${format("%s_jenkins_efs",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name = "${format("%s_jenkins_efs_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
   description = "${format("%s Jenkins efs Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
@@ -234,13 +233,12 @@ resource "aws_security_group" "jenkins_efs_security_group" {
   }
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
             "Environment", var.deploy_environment,
             "Name", format("%s_jenkins_efs",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            ),
-            "Service", "jenkins"
+            )
         )
     )}"
 }
@@ -250,13 +248,12 @@ resource "aws_efs_file_system" "jenkins_efs" {
   performance_mode = "generalPurpose"
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_efs",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            ),
-            "Service", "jenkins"
+            "Name", format("%s_jenkins_efs_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+            )
         )
     )}"
 }
@@ -274,8 +271,9 @@ resource "aws_efs_mount_target" "jenkins_efs_mount_target" {
 
 resource "aws_elb" "jenkins_elb" {
 
-  name = "${format("%s-jenkins-elb",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name = "${format("%s-jenkins-elb-%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
 
   subnets = [
@@ -316,21 +314,20 @@ resource "aws_elb" "jenkins_elb" {
   }
 
   tags = "${merge(
-        var.base_aws_tags,
         map(
             "Environment", var.deploy_environment,
             "Name", format("%s_jenkins_elb",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            ),
-            "Service", "jenkins"
+            )
         )
     )}"
 }
 
 resource "aws_elb" "jenkins_proxy_elb" {
 
-  name = "${format("%s-jenkins-proxy-elb",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name = "${format("%s-jenkins-proxy-%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
 
   subnets = [
@@ -363,13 +360,11 @@ resource "aws_elb" "jenkins_proxy_elb" {
   }
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_jenkins_proxy_elb",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            ),
-            "Service", "jenkins"
+            )
         )
     )}"
 }
@@ -484,27 +479,30 @@ data "aws_iam_policy_document" "jenkins_iam_policy_document" {
 
 resource "aws_iam_role" "jenkins_role" {
 
-  name = "${format("%s_%s_jenkins",
+  name = "${format("%s_%s_jenkins_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        var.aws_region
+        var.aws_region,
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
   assume_role_policy = "${data.aws_iam_policy_document.jenkins_assume_role_policy_document.json}"
 }
 
 resource "aws_iam_instance_profile" "jenkins_instance_profile" {
 
-  name = "${format("%s_%s_jenkins",
+  name = "${format("%s_%s_jenkins_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        var.aws_region
+        var.aws_region,
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
   role = "${aws_iam_role.jenkins_role.name}"
 }
 
 resource "aws_iam_policy" "jenkins_iam_policy" {
 
-  name = "${format("%s_%s_jenkins",
+  name = "${format("%s_%s_jenkins_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        var.aws_region
+        var.aws_region,
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
   policy = "${data.aws_iam_policy_document.jenkins_iam_policy_document.json}"
 }
@@ -521,8 +519,9 @@ data "template_file" "user_data" {
   vars {
     efs_id = "${aws_efs_file_system.jenkins_efs.id}"
     jenkins_elb_dns_name = "${aws_elb.jenkins_elb.dns_name}"
-    ecs_cluster_name = "${format("%s_jenkins_cluster",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+    ecs_cluster_name = "${format("%s_jenkins_cluster_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
     aws_region = "${var.aws_region}"
   }
@@ -530,8 +529,9 @@ data "template_file" "user_data" {
 
 resource "aws_launch_configuration" "jenkins_launch_configuration" {
 
-  name_prefix = "${format("%s_jenkins_",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name_prefix = "${format("%s_jenkins_%s_",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
 
   image_id = "${coalesce(
@@ -568,8 +568,9 @@ resource "aws_autoscaling_group" "jenkins_asg" {
   vpc_zone_identifier = [
     "${split(",", var.jenkins_subnets)}"
   ]
-  name = "${format("%s_jenkins",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name = "${format("%s_jenkins_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
 
   min_size = "${var.asg_min_size}"
@@ -591,19 +592,59 @@ resource "aws_autoscaling_group" "jenkins_asg" {
     propagate_at_launch = true
   }
   tag {
-    key = "Role"
-    value = "${lookup(var.base_aws_tags, "Role")}"
+    key = "Resource_Name"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Resource_Name")}"
+    propagate_at_launch = true
+  }
+  tag {
+    key = "Project_Name"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Project_Name")}"
     propagate_at_launch = true
   }
   tag {
     key = "Environment"
-    value = "${var.deploy_environment}"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Environment")}"
     propagate_at_launch = true
   }
+  tag {
+    key = "Cost_Center"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Cost_Center")}"
+    propagate_at_launch = true
+  }
+  tag {
+    key = "Tier"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Tier")}"
+    propagate_at_launch = true
+  }
+  tag {
+    key = "App_Operations_Owner"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "App_Operations_Owner")}"
+    propagate_at_launch = true
+  }
+  tag {
+    key = "System_Owner"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "System_Owner")}"
+    propagate_at_launch = true
+  }
+  tag {
+    key = "Budget_Owner"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Budget_Owner")}"
+    propagate_at_launch = true
+  }
+  tag {
+    key = "Created_By"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Created_By")}"
+    propagate_at_launch = true
+  }
+
 }
 
 data "template_file" "jenkins_task_template" {
   template = "${file("${path.module}/templates/jenkins.json.tpl")}"
+
+  vars {
+    jenkins_image_tag = "${var.jenkins_image_tag}"
+  }
 }
 
 data "template_file" "jenkins_proxy_task_template" {
@@ -611,8 +652,9 @@ data "template_file" "jenkins_proxy_task_template" {
 }
 
 resource "aws_ecs_cluster" "jenkins_ecs_cluster" {
-  name = "${format("%s_jenkins_cluster",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+  name = "${format("%s_jenkins_cluster_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
 }
 
@@ -637,7 +679,11 @@ resource "aws_ecs_task_definition" "jenkins_proxy_ecs_task" {
 }
 
 resource "aws_ecs_service" "jenkins_ecs_service" {
-  name = "jenkins"
+  name = "${format("%s_jenkins_service_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
   cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
   task_definition = "${aws_ecs_task_definition.jenkins_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"
@@ -656,7 +702,11 @@ resource "aws_ecs_service" "jenkins_ecs_service" {
 }
 
 resource "aws_ecs_service" "jenkins_proxy_ecs_service" {
-  name = "jenkins_proxy"
+  name = "${format("%s_jenkins_proxy_service_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
   cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
   task_definition = "${aws_ecs_task_definition.jenkins_proxy_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"

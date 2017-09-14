@@ -18,3 +18,21 @@ provisioner_ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIa/BQQ0obYu
 
 mgmt_vpc_id = "vpc-7835511f"
 mgmt_vpc_cidr = "10.0.0.0/16"
+
+tag_resource_name = "General"
+tag_project_name = "AODP-Standard-Demo"
+tag_environment = "Test"
+tag_cost_center = "iCode-"
+tag_tier = "General"
+tag_app_operations_owner = "Marco"
+tag_system_owner = "Marco"
+tag_budget_owner = "Marco"
+
+tag_bastion_resource_name = "Bastion Server"
+tag_bastion_project_name = "AODP-Standard-Demo"
+tag_bastion_environment = "Test"
+tag_bastion_cost_center = "iCode-"
+tag_bastion_tier = "Bastion"
+tag_bastion_app_operations_owner = "Marco"
+tag_bastion_system_owner = "Marco"
+tag_bastion_budget_owner = "Marco"

@@ -1,7 +1,1 @@
-data "null_data_source" "vpc_defaults" {
-    inputs = {
-        name_prefix = "${format("%s",
-            var.vpc_shortname
-        )}"
-    }
-}
+data "aws_caller_identity" "current" {}

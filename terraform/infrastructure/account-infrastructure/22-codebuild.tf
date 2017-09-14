@@ -1,7 +1,6 @@
 module "codebuild_jenkins" {
   source = "../../modules/codebuild"
 
-  vpc_shortname = "${var.vpc_shortname}"
   aws_region = "${var.aws_region}"
 
   codebuild_name = "${var.jenkins_codebuild_name}"
@@ -13,7 +12,6 @@ module "codebuild_jenkins" {
 module "codebuild_jenkins_slave" {
   source = "../../modules/codebuild"
 
-  vpc_shortname = "${var.vpc_shortname}"
   aws_region = "${var.aws_region}"
 
   codebuild_name = "${var.jenkins_slave_codebuild_name}"

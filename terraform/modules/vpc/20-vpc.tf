@@ -23,9 +23,8 @@ resource "aws_vpc" "vpc" {
   enable_dns_hostnames = "${var.enable_dns_hostnames}"
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names, count.index)
@@ -45,9 +44,8 @@ resource "aws_internet_gateway" "vpc_igw" {
   vpc_id = "${aws_vpc.vpc.id}"
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_igw",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
             )
@@ -61,9 +59,8 @@ resource "aws_vpn_gateway" "vpn_gw" {
   vpc_id = "${aws_vpc.vpc.id}"
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_vgw",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
             )
@@ -84,9 +81,8 @@ resource "aws_subnet" "dmz_subnet" {
 
   map_public_ip_on_launch = "true"
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_dmz_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names , count.index)
@@ -107,9 +103,8 @@ resource "aws_subnet" "public_subnet" {
 
   map_public_ip_on_launch = "false"
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_public_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names , count.index)
@@ -130,9 +125,8 @@ resource "aws_subnet" "private_subnet" {
 
   map_public_ip_on_launch = "false"
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_private_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names , count.index)
@@ -155,9 +149,8 @@ resource "aws_route_table" "dmz_subnet_rt" {
   count = "${length(data.aws_availability_zones.available.names)}"
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_dmz_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names, count.index)
@@ -185,9 +178,8 @@ resource "aws_route_table" "public_subnet_rt" {
   count = "${length(data.aws_availability_zones.available.names)}"
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_public_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names, count.index)
@@ -214,9 +206,8 @@ resource "aws_route_table" "private_subnet_rt" {
   count = "${length(data.aws_availability_zones.available.names)}"
 
   tags = "${merge(
-        var.base_aws_tags,
+        data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
             "Name", format("%s_private_%s",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                 element(data.aws_availability_zones.available.names, count.index)
