@@ -34,7 +34,7 @@ resource "aws_route" "mgmt_to_standard_dmz" {
 
   count = "${length(data.aws_availability_zones.available.names)}"
 
-  route_table_id = "${element(data.aws_route_table.mgmt_dmz_route_tables.0.route_table_id, count.index)}"
+  route_table_id = "${element(data.aws_route_table.mgmt_dmz_route_tables.*.route_table_id, count.index)}"
   destination_cidr_block = "${var.vpc_cidr}"
   vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peering_connection.id}"
 }
@@ -43,7 +43,7 @@ resource "aws_route" "mgmt_to_standard_public" {
 
   count = "${length(data.aws_availability_zones.available.names)}"
 
-  route_table_id = "${element(data.aws_route_table.mgmt_public_route_tables.1.route_table_id, count.index)}"
+  route_table_id = "${element(data.aws_route_table.mgmt_public_route_tables.*.route_table_id, count.index)}"
   destination_cidr_block = "${var.vpc_cidr}"
   vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peering_connection.id}"
 }
@@ -52,7 +52,7 @@ resource "aws_route" "mgmt_to_standard_private" {
 
   count = "${length(data.aws_availability_zones.available.names)}"
 
-  route_table_id = "${element(data.aws_route_table.mgmt_private_route_tables.2.route_table_id, count.index)}"
+  route_table_id = "${element(data.aws_route_table.mgmt_private_route_tables.*.route_table_id, count.index)}"
   destination_cidr_block = "${var.vpc_cidr}"
   vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peering_connection.id}"
 }
