@@ -15,7 +15,7 @@ node('jenkins-linux-slave') {
     }
 
     withEnv(["REGION=${STATE_BUCKET_REGION}"]) {
-       stage ('creds') {
+       stage ('fetch_credentials') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure
