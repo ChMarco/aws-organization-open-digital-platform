@@ -6,6 +6,6 @@ output "bastion_outputs" {
   value = "${module.bastion.bastion_outputs}"
 }
 
-//output "vpc_peering_id" {
-//  value = "${module.vpc_peering.vpc_peering_id}"
-//}
+output "vpc_peering_id" {
+  value = "${module.vpc_peering.vpc_peering_id}"
+}
