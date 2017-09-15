@@ -1,0 +1,45 @@
+global:
+  scrape_interval:     15s
+  scrape_timeout:      10s
+  evaluation_interval: 15s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'docker-host-alpha'
+
+# Load and evaluate rules in this file every 'evaluation_interval' seconds.
+rule_files:
+  - "targets.rules"
+  - "hosts.rules"
+  - "containers.rules"
+
+# A scrape configuration containing exactly one endpoint to scrape.
+scrape_configs:
+
+  - job_name: 'prometheus'
+    ec2_sd_configs:
+      - region: eu-west-1
+        port: 9090
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Created_By]
+        regex: Terraform
+        action: keep
+
+  - job_name: 'nodeexporter'
+    ec2_sd_configs:
+      - region: eu-west-1
+        port: 9100
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Created_By]
+        regex: Terraform
+        action: keep
+
+  - job_name: 'cadvisor'
+    ec2_sd_configs:
+      - region: eu-west-1
+        port: 8080
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Created_By]
+        regex: Terraform
+        action: keep

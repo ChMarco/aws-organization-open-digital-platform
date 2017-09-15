@@ -62,3 +62,15 @@ variable "bitbucket_web_whitelist" { type = "map" }
 # Artifactory
 variable "artifactory_public_key" {}
 variable "artifactory_web_whitelist" { type = "map" }
+
+# Monitoring
+variable "monitoring_public_key" {}
+variable "monitoring_web_whitelist" { type = "map" }
+variable "tag_monitoring_resource_name" {}
+variable "tag_monitoring_project_name" {}
+variable "tag_monitoring_environment" {}
+variable "tag_monitoring_cost_center" {}
+variable "tag_monitoring_tier" {}
+variable "tag_monitoring_app_operations_owner" {}
+variable "tag_monitoring_system_owner" {}
+variable "tag_monitoring_budget_owner" {}
