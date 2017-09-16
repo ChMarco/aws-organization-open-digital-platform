@@ -1,0 +1,67 @@
+global:
+  scrape_interval:     15s
+  scrape_timeout:      10s
+  evaluation_interval: 15s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'docker-host-alpha'
+
+# Load and evaluate rules in this file every 'evaluation_interval' seconds.
+rule_files:
+  - "*.rules"
+
+# A scrape configuration containing exactly one endpoint to scrape.
+scrape_configs:
+
+  - job_name: 'cadvisor'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['localhost:8080']
+        labels: {'host': 'monitoring-master'}
+
+  - job_name: 'nodeexporter'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['localhost:9100']
+        labels: {'host': 'monitoring-master'}
+
+  - job_name: 'prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['localhost:9090']
+        labels: {'host': 'monitoring-master'}
+
+  - job_name: 'bastion-node-exporter'
+    ec2_sd_configs:
+      - region: eu-west-1
+        port: 9100
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Service]
+        regex: Bastion
+        action: keep
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: instance
+
+  - job_name: 'jenkins-node-exporter'
+    ec2_sd_configs:
+      - region: eu-west-1
+        port: 9100
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Service]
+        regex: Jenkins
+        action: keep
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: instance
+
+  - job_name: 'jenkins-cadvisor'
+    ec2_sd_configs:
+      - region: eu-west-1
+        port: 8080
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Service]
+        regex: Jenkins
+        action: keep
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: instance

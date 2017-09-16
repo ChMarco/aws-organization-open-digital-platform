@@ -267,8 +267,8 @@ resource "aws_autoscaling_group" "bastion_asg" {
     propagate_at_launch = true
   }
   tag {
-    key = "Tier"
-    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Tier")}"
+    key = "Service"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Service")}"
     propagate_at_launch = true
   }
   tag {

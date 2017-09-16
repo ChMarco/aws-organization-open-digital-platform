@@ -26,7 +26,7 @@ variable "tag_bastion_resource_name" {}
 variable "tag_bastion_project_name" {}
 variable "tag_bastion_environment" {}
 variable "tag_bastion_cost_center" {}
-variable "tag_bastion_tier" {}
+variable "tag_bastion_service" {}
 variable "tag_bastion_app_operations_owner" {}
 variable "tag_bastion_system_owner" {}
 variable "tag_bastion_budget_owner" {}
@@ -39,7 +39,7 @@ variable "tag_jenkins_resource_name" {}
 variable "tag_jenkins_project_name" {}
 variable "tag_jenkins_environment" {}
 variable "tag_jenkins_cost_center" {}
-variable "tag_jenkins_tier" {}
+variable "tag_jenkins_service" {}
 variable "tag_jenkins_app_operations_owner" {}
 variable "tag_jenkins_system_owner" {}
 variable "tag_jenkins_budget_owner" {}
@@ -70,7 +70,7 @@ variable "tag_monitoring_resource_name" {}
 variable "tag_monitoring_project_name" {}
 variable "tag_monitoring_environment" {}
 variable "tag_monitoring_cost_center" {}
-variable "tag_monitoring_tier" {}
+variable "tag_monitoring_service" {}
 variable "tag_monitoring_app_operations_owner" {}
 variable "tag_monitoring_system_owner" {}
 variable "tag_monitoring_budget_owner" {}
