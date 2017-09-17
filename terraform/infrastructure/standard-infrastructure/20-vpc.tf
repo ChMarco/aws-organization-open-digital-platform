@@ -14,7 +14,6 @@ module "vpc" {
   tag_project_name = "${var.tag_project_name}"
   tag_environment = "${var.tag_environment}"
   tag_cost_center = "${var.tag_cost_center}"
-  tag_tier = "${var.tag_tier}"
   tag_app_operations_owner = "${var.tag_app_operations_owner}"
   tag_system_owner = "${var.tag_system_owner}"
   tag_budget_owner = "${var.tag_budget_owner}"

@@ -31,7 +31,7 @@ variable "tag_bastion_resource_name" {}
 variable "tag_bastion_project_name" {}
 variable "tag_bastion_environment" {}
 variable "tag_bastion_cost_center" {}
-variable "tag_bastion_tier" {}
+variable "tag_bastion_service" {}
 variable "tag_bastion_app_operations_owner" {}
 variable "tag_bastion_system_owner" {}
 variable "tag_bastion_budget_owner" {}
