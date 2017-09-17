@@ -1,6 +1,7 @@
 #!/bin/bash
 
-block="/mnt/efs/prometheus.yml"
+prometheus="/mnt/efs/prometheus.yml"
+alertmanager="/mnt/efs/alertmanager.yml"
 
 echo ECS_CLUSTER='${ecs_cluster_name}' > /etc/ecs/ecs.config
 
@@ -17,7 +18,7 @@ echo $${aws_az}.${efs_id}.efs.$${aws_region}.amazonaws.com:/    /mnt/efs   nfs4 
 mount -a
 chmod -R 777 /mnt/efs
 
-tee $block > /dev/null <<EOF
+tee $prometheus > /dev/null <<EOF
 global:
   scrape_interval:     15s
   scrape_timeout:      10s
@@ -64,6 +65,29 @@ scrape_configs:
         regex: Terraform
         action: keep
 EOF
+
+tee $alertmanager > /dev/null <<EOF
+global:
+  slack_api_url: 'https://hooks.slack.com/services/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'
+
+route:
+  group_wait: 30s
+  group_by: [alertname, __meta_ec2_tag_Environment, __meta_ec2_tag_Service]
+  group_interval: 5m
+  repeat_interval: 24h
+  receiver: 'slack-notifications'
+
+  routes:
+    - receiver: slack-notifications
+
+receivers:
+- name: 'slack-notifications'
+  slack_configs:
+  - channel: '{{ alert_slack_channel }}'
+    text: 'Instances: {{ range .Alerts }}{{ .Labels.instance }} {{ end }}'
+    send_resolved: true
+EOF
+
 
 service docker restart
 start ecs

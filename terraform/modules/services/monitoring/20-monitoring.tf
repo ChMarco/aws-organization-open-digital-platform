@@ -354,6 +354,8 @@ data "aws_iam_policy_document" "monitoring_iam_policy_document" {
       "elasticloadbalancing:Describe*",
       "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
       "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+      "elasticloadbalancing:RegisterTargets",
+      "elasticloadbalancing:DeregisterTargets",
       "ec2:Describe*",
       "ec2:AuthorizeSecurityGroupIngress"
     ]
@@ -572,6 +574,10 @@ data "template_file" "monitoring_prometheus_task_template" {
   template = "${file("${path.module}/templates/monitoring_prometheus.json.tpl")}"
 }
 
+data "template_file" "monitoring_alertmanager_task_template" {
+  template = "${file("${path.module}/templates/monitoring_alertmanager.json.tpl")}"
+}
+
 data "template_file" "monitoring_grafana_task_template" {
   template = "${file("${path.module}/templates/monitoring_grafana.json.tpl")}"
 }
@@ -620,6 +626,21 @@ resource "aws_ecs_task_definition" "monitoring_prometheus_ecs_task" {
   volume {
     name = "prometheus_data"
     host_path = "/var/opt/prometheus"
+  }
+
+  volume {
+    name = "efs-monitoring"
+    host_path = "/mnt/efs"
+  }
+}
+
+resource "aws_ecs_task_definition" "monitoring_alertmanager_ecs_task" {
+  family = "monitoring"
+  container_definitions = "${data.template_file.monitoring_alertmanager_task_template.rendered}"
+
+  volume {
+    name = "alertmanager_data"
+    host_path = "/var/opt/alertmanager"
   }
 
   volume {

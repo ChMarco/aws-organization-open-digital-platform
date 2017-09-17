@@ -13,12 +13,12 @@
     "essential": true,
     "privileged": true,
     "command": [
-      "-config.file=/etc/alertmanager/config.yml",
+      "-config.file=/etc/alertmanager/alertmanager.yml",
       "-storage.path=/alertmanager"
     ],
     "mountPoints": [
       {
-        "sourceVolume": "efs-monitoring",
+        "sourceVolume": "alertmanager_data",
         "containerPath": "/alertmanager"
       },
       {
