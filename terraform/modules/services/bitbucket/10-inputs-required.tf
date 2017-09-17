@@ -10,6 +10,7 @@ variable "bitbucket_rds_subnets" {}
 variable "bitbucket_ssh_bastion_access" {}
 variable "bitbucket_web_whitelist" { type = "map" default = {} }
 
+variable "monitoring_security_group" {}
 variable "deploy_environment" {}
 
 # Tags

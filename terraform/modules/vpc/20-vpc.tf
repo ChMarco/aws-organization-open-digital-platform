@@ -34,6 +34,57 @@ resource "aws_vpc" "vpc" {
 }
 
 #--------------------------------------------------------------
+# Default Security Groups
+#--------------------------------------------------------------
+
+# Monitoring
+
+resource "aws_security_group" "monitoring_security_group" {
+
+  name = "${format("%s_monitoring_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+  description = "${format("%s Monitoring Security Group",
+        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
+    )}"
+  vpc_id = "${aws_vpc.vpc.id}"
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+  }
+
+  ingress {
+    from_port = 9100
+    to_port = 9100
+    protocol = "6"
+    self = "true"
+  }
+
+  ingress {
+    from_port = 9191
+    to_port = 9191
+    protocol = "6"
+    self = "true"
+  }
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s_monitoring_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+            )
+        )
+    )}"
+}
+
+#--------------------------------------------------------------
 # Connectivity
 #--------------------------------------------------------------
 

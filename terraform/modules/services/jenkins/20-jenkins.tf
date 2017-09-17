@@ -80,8 +80,9 @@ resource "aws_security_group" "jenkins_security_group" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s_jenkins_ec2",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_jenkins_ec2_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -120,8 +121,9 @@ resource "aws_security_group" "jenkins_elb_security_group" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s_jenkins_elb",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_jenkins_elb_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -237,8 +239,9 @@ resource "aws_security_group" "jenkins_efs_security_group" {
         data.null_data_source.tag_defaults.inputs,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_jenkins_efs",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_jenkins_efs_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -545,7 +548,8 @@ resource "aws_launch_configuration" "jenkins_launch_configuration" {
   associate_public_ip_address = "${var.lc_associate_public_ip_address}"
   key_name = "${aws_key_pair.jenkins_key_pair.key_name}"
   security_groups = [
-    "${aws_security_group.jenkins_security_group.id}"
+    "${aws_security_group.jenkins_security_group.id}",
+    "${var.monitoring_security_group}"
   ]
 
   iam_instance_profile = "${coalesce(
@@ -636,11 +640,24 @@ resource "aws_autoscaling_group" "jenkins_asg" {
     propagate_at_launch = true
   }
   tag {
+    key = "Monitoring"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Monitoring")}"
+    propagate_at_launch = true
+  }
+  tag {
     key = "Created_By"
     value = "${lookup(data.null_data_source.tag_defaults.inputs, "Created_By")}"
     propagate_at_launch = true
   }
 
+}
+
+data "template_file" "monitoring_cadvisor_task_template" {
+  template = "${file("${path.module}/templates/monitoring_cadvisor.json.tpl")}"
+}
+
+data "template_file" "monitoring_node_exporter_task_template" {
+  template = "${file("${path.module}/templates/monitoring_node_exporter.json.tpl")}"
 }
 
 data "template_file" "jenkins_task_template" {
@@ -660,6 +677,43 @@ resource "aws_ecs_cluster" "jenkins_ecs_cluster" {
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
+}
+
+resource "aws_ecs_task_definition" "monitoring_cadvisor_ecs_task" {
+  family = "monitoring"
+  container_definitions = "${data.template_file.monitoring_cadvisor_task_template.rendered}"
+
+  volume {
+    name = "root"
+    host_path = "/"
+  }
+
+  volume {
+    name = "var_run"
+    host_path = "/var/run"
+  }
+
+  volume {
+    name = "sys"
+    host_path = "/sys"
+  }
+
+  volume {
+    name = "var_lib_docker"
+    host_path = "/var/lib/docker/"
+  }
+
+  volume {
+    name = "cgroup"
+    host_path = "/cgroup"
+  }
+}
+
+resource "aws_ecs_task_definition" "monitoring_node_exporter_ecs_task" {
+  family = "monitoring"
+  container_definitions = "${data.template_file.monitoring_node_exporter_task_template.rendered}"
+
+  network_mode = "host"
 }
 
 resource "aws_ecs_task_definition" "jenkins_ecs_task" {
@@ -726,6 +780,36 @@ resource "aws_ecs_service" "jenkins_proxy_ecs_service" {
 
   depends_on = [
     "aws_elb.jenkins_proxy_elb",
+    "aws_autoscaling_group.jenkins_asg"
+  ]
+}
+
+resource "aws_ecs_service" "monitoring_cadvisor_ecs_service" {
+  name = "${format("%s_monitoring_cadvisor_service_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
+  cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
+  task_definition = "${aws_ecs_task_definition.monitoring_cadvisor_ecs_task.arn}"
+  desired_count = "${var.service_desired_count}"
+
+  depends_on = [
+    "aws_autoscaling_group.jenkins_asg"
+  ]
+}
+
+resource "aws_ecs_service" "monitoring_node_exporter_ecs_service" {
+  name = "${format("%s_monitoring_node_exporter_service_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
+  cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
+  task_definition = "${aws_ecs_task_definition.monitoring_node_exporter_ecs_task.arn}"
+  desired_count = "${var.service_desired_count}"
+
+  depends_on = [
     "aws_autoscaling_group.jenkins_asg"
   ]
 }

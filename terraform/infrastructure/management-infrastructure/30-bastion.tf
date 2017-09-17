@@ -8,6 +8,8 @@ module "bastion" {
   bastion_ssh_whitelist = "${var.bastion_ssh_whitelist}"
   bastion_subnets = "${lookup(module.vpc.vpc_outputs, "dmz_subnet_ids")}"
   provisioner_ssh_public_key = "${var.provisioner_ssh_public_key}"
+
+  monitoring_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_monitoring_secuirty_group")}"
   deploy_environment = "${var.deploy_environment}"
 
   tag_resource_name = "${var.tag_bastion_resource_name}"

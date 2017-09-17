@@ -1,3 +1,4 @@
+---
 global:
   scrape_interval:     15s
   scrape_timeout:      10s
@@ -15,53 +16,42 @@ rule_files:
 # A scrape configuration containing exactly one endpoint to scrape.
 scrape_configs:
 
-  - job_name: 'cadvisor'
-    scrape_interval: 10s
-    static_configs:
-      - targets: ['localhost:8080']
-        labels: {'host': 'monitoring-master'}
-
-  - job_name: 'nodeexporter'
-    scrape_interval: 10s
-    static_configs:
-      - targets: ['localhost:9100']
-        labels: {'host': 'monitoring-master'}
-
   - job_name: 'prometheus'
     scrape_interval: 10s
     static_configs:
       - targets: ['localhost:9090']
-        labels: {'host': 'monitoring-master'}
 
-  - job_name: 'bastion-node-exporter'
+  - job_name: 'cadvisor-monitoring'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['localhost:8080']
+
+  - job_name: 'node-exporter'
     ec2_sd_configs:
       - region: eu-west-1
         port: 9100
     relabel_configs:
-      - source_labels: [__meta_ec2_tag_Service]
-        regex: Bastion
+      - source_labels: [__meta_ec2_tag_Monitoring]
+        regex: On
         action: keep
       - source_labels: [__meta_ec2_tag_Name]
         target_label: instance
+      - source_labels: [__meta_ec2_tag_Environment]
+        target_label: env
+      - source_labels: [__meta_ec2_tag_Service]
+        target_label: service_type
 
-  - job_name: 'jenkins-node-exporter'
+  - job_name: 'cadvisor'
     ec2_sd_configs:
       - region: eu-west-1
-        port: 9100
+        port: 9191
     relabel_configs:
-      - source_labels: [__meta_ec2_tag_Service]
-        regex: Jenkins
+      - source_labels: [__meta_ec2_tag_Monitoring]
+        regex: On
         action: keep
       - source_labels: [__meta_ec2_tag_Name]
         target_label: instance
-
-  - job_name: 'jenkins-cadvisor'
-    ec2_sd_configs:
-      - region: eu-west-1
-        port: 8080
-    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Environment]
+        target_label: env
       - source_labels: [__meta_ec2_tag_Service]
-        regex: Jenkins
-        action: keep
-      - source_labels: [__meta_ec2_tag_Name]
-        target_label: instance
+        target_label: service_type

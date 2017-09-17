@@ -64,8 +64,9 @@ resource "aws_security_group" "bastion_security_group" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s_bastion_ec2",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_bastion_ec2_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -197,7 +198,8 @@ resource "aws_launch_configuration" "bastion_launch_configuration" {
   associate_public_ip_address = "${var.lc_associate_public_ip_address}"
   key_name = "${aws_key_pair.bastion_key_pair.key_name}"
   security_groups = [
-    "${aws_security_group.bastion_security_group.id}"
+    "${aws_security_group.bastion_security_group.id}",
+    "${var.monitoring_security_group}"
   ]
 
   iam_instance_profile = "${coalesce(
@@ -284,6 +286,11 @@ resource "aws_autoscaling_group" "bastion_asg" {
   tag {
     key = "Budget_Owner"
     value = "${lookup(data.null_data_source.tag_defaults.inputs, "Budget_Owner")}"
+    propagate_at_launch = true
+  }
+  tag {
+    key = "Monitoring"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Monitoring")}"
     propagate_at_launch = true
   }
   tag {

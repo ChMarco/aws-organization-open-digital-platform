@@ -79,8 +79,9 @@ resource "aws_security_group" "bitbucket_security_group" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s_bitbucket_ec2",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_bitbucket_ec2_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -161,8 +162,9 @@ resource "aws_security_group" "bitbucket_elb_security_group" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s_bitbucket_elb",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_bitbucket_elb_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -202,9 +204,9 @@ resource "aws_security_group" "bitbucket_efs_security_group" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
-            "Name", format("%s_bitbucket_efs",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_bitbucket_efs_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -252,9 +254,9 @@ resource "aws_security_group" "bitbucket_rds_security_group" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Environment", var.deploy_environment,
-            "Name", format("%s_bitbucket_rds",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_bitbucket_rds_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -358,8 +360,9 @@ resource "aws_db_subnet_group" "bitbucket_rds_subnet_group" {
         data.null_data_source.tag_defaults.inputs,
         map(
             "Environment", var.deploy_environment,
-            "Name", format("%s_bitbucket_rds",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            "Name", format("%s_bitbucket_rds_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
@@ -560,7 +563,8 @@ resource "aws_launch_configuration" "bitbucket_launch_configuration" {
   associate_public_ip_address = "${var.lc_associate_public_ip_address}"
   key_name = "${aws_key_pair.bitbucket_key_pair.key_name}"
   security_groups = [
-    "${aws_security_group.bitbucket_security_group.id}"
+    "${aws_security_group.bitbucket_security_group.id}",
+    "${var.monitoring_security_group}"
   ]
 
   iam_instance_profile = "${coalesce(
@@ -648,6 +652,11 @@ resource "aws_autoscaling_group" "bitbucket_asg" {
   tag {
     key = "Budget_Owner"
     value = "${lookup(data.null_data_source.tag_defaults.inputs, "Budget_Owner")}"
+    propagate_at_launch = true
+  }
+  tag {
+    key = "Monitoring"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Monitoring")}"
     propagate_at_launch = true
   }
   tag {

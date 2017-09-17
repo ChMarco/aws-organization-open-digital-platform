@@ -461,7 +461,8 @@ resource "aws_launch_configuration" "monitoring_launch_configuration" {
   associate_public_ip_address = "${var.lc_associate_public_ip_address}"
   key_name = "${aws_key_pair.monitoring_key_pair.key_name}"
   security_groups = [
-    "${aws_security_group.monitoring_security_group.id}"
+    "${aws_security_group.monitoring_security_group.id}",
+    "${var.monitoring_security_group}"
   ]
 
   iam_instance_profile = "${coalesce(

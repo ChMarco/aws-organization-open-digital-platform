@@ -10,6 +10,7 @@ variable "jenkins_elb_subnets" {}
 variable "jenkins_ssh_bastion_access" {}
 variable "jenkins_web_whitelist" { type = "map" default = {} }
 
+variable "monitoring_security_group" {}
 variable "deploy_environment" {}
 
 # Tags

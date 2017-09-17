@@ -10,6 +10,7 @@ variable "bastion_ssh_whitelist" { type = "map" default = {} }
 variable "provisioner_username" { default = "provisioner" }
 variable "provisioner_ssh_public_key" {}
 
+variable "monitoring_security_group" {}
 variable "deploy_environment" {}
 
 # Tags

@@ -22,3 +22,5 @@ variable "bastion_ami" {
         "ap-southeast-2" = "ami-43ee9e79"
     }
 }
+
+variable "tag_monitoring" { default = "On" }
