@@ -19,6 +19,7 @@ mount -a
 chmod -R 777 /mnt/efs
 
 tee $prometheus > /dev/null <<EOF
+---
 global:
   scrape_interval:     15s
   scrape_timeout:      10s
@@ -31,39 +32,55 @@ global:
 
 # Load and evaluate rules in this file every 'evaluation_interval' seconds.
 rule_files:
-  - "targets.rules"
-  - "hosts.rules"
-  - "containers.rules"
+  - "*.rules"
 
 # A scrape configuration containing exactly one endpoint to scrape.
 scrape_configs:
 
-  - job_name: 'prometheus'
-    ec2_sd_configs:
-      - region: eu-west-1
-        port: 9090
-    relabel_configs:
-      - source_labels: [__meta_ec2_tag_Created_By]
-        regex: Terraform
-        action: keep
-
   - job_name: 'nodeexporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['${monitoring_elb_dns_name}:9100']
+
+  - job_name: 'cadvisor'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['${monitoring_elb_dns_name}:8080']
+
+  - job_name: 'prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['${monitoring_elb_dns_name}:9090']
+
+  - job_name: 'instance-nodeexporter'
     ec2_sd_configs:
       - region: eu-west-1
         port: 9100
     relabel_configs:
-      - source_labels: [__meta_ec2_tag_Created_By]
-        regex: Terraform
+      - source_labels: [__meta_ec2_tag_Monitoring]
+        regex: On
         action: keep
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_Environment]
+        target_label: env
+      - source_labels: [__meta_ec2_tag_Service]
+        target_label: service_type
 
-  - job_name: 'cadvisor'
+  - job_name: 'instance-cadvisor'
     ec2_sd_configs:
-      - region: us-east-1
-        port: 9010
+      - region: eu-west-1
+        port: 9191
     relabel_configs:
-      - source_labels: [__meta_ec2_tag_Created_By]
-        regex: Terraform
+      - source_labels: [__meta_ec2_tag_Monitoring]
+        regex: On
         action: keep
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_Environment]
+        target_label: env
+      - source_labels: [__meta_ec2_tag_Service]
+        target_label: service_type
 EOF
 
 tee $alertmanager > /dev/null <<EOF

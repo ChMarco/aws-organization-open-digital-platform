@@ -4,12 +4,13 @@
  * Components:
  *   - monitoring_key_pair
  *   - monitoring_security_group
- *   - monitoring_proxy_elb_security_group
+ *   - monitoring_internal_elb_security_group
+ *   - monitoring_grafana_elb_security_group
  *   - monitoring_efs_security_group
  *   - monitoring_efs
  *   - monitoring_efs_mount_target
- *   - monitoring_elb
- *   - monitoring_proxy_elb
+ *   - monitoring_grafana_elb
+ *   - monitoring_internal_elb
  *   - monitoring_assume_role_policy_document
  *   - monitoring_iam_policy_document
  *   - monitoring_role
@@ -18,11 +19,17 @@
  *   - monitoring_role_iam_policy_attachment
  *   - monitoring_launch_configuration
  *   - monitoring_asg
+ *   - monitoring_cadvisor_ecs_task
+ *   - monitoring_node_exporter_ecs_task
+ *   - monitoring_prometheus_ecs_task
+ *   - monitoring_alertmanager_ecs_task
+ *   - monitoring_grafana_ecs_task
  *   - monitoring_ecs_cluster
- *   - monitoring_ecs_task
- *   - monitoring_proxy_ecs_task
- *   - monitoring_ecs_service
- *   - monitoring_proxy_ecs_service
+ *   - monitoring_cadvisor_ecs_service
+ *   - monitoring_node_exporter_ecs_service
+ *   - monitoring_prometheus_ecs_service
+ *   - monitoring_alertmanager_ecs_service
+ *   - monitoring_grafana_ecs_service
  */
 
 resource "aws_key_pair" "monitoring_key_pair" {
@@ -85,6 +92,79 @@ resource "aws_security_group" "monitoring_security_group" {
             )
         )
     )}"
+}
+
+resource "aws_security_group" "monitoring_internal_elb_security_group" {
+
+  name = "${format("%s_monitoring_elb_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+  description = "${format("%s Monitoring elb Security Group",
+        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
+    )}"
+
+  vpc_id = "${var.vpc_id}"
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+  }
+
+  ingress {
+    from_port = 9090
+    to_port = 9090
+    protocol = "6"
+    security_groups = [
+      "${aws_security_group.monitoring_security_group.id}"
+    ]
+  }
+
+  ingress {
+    from_port = 8080
+    to_port = 8080
+    protocol = "6"
+    security_groups = [
+      "${aws_security_group.monitoring_security_group.id}"
+    ]
+  }
+
+  ingress {
+    from_port = 9100
+    to_port = 9100
+    protocol = "6"
+    security_groups = [
+      "${aws_security_group.monitoring_security_group.id}"
+    ]
+  }
+
+  ingress {
+    from_port = 9093
+    to_port = 9093
+    protocol = "6"
+    security_groups = [
+      "${aws_security_group.monitoring_security_group.id}"
+    ]
+  }
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s_monitoring_elb_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+            )
+        )
+    )}"
+
+  lifecycle {
+    create_before_destroy = "true"
+  }
+
 }
 
 resource "aws_security_group" "monitoring_grafana_elb_security_group" {
@@ -289,6 +369,75 @@ resource "aws_elb" "monitoring_grafana_elb" {
     )}"
 }
 
+resource "aws_elb" "monitoring_internal_elb" {
+
+  name = "${format("%s-monitoring-%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
+  subnets = [
+    "${split(",", var.monitoring_subnets)}",
+  ]
+
+  security_groups = [
+    "${aws_security_group.monitoring_security_group.id}",
+    "${aws_security_group.monitoring_internal_elb_security_group.id}"
+  ]
+
+  internal = "true"
+  cross_zone_load_balancing = true
+  idle_timeout = 60
+  connection_draining = true
+  connection_draining_timeout = 300
+
+  listener {
+    instance_port = "9090"
+    instance_protocol = "tcp"
+    lb_port = "9090"
+    lb_protocol = "tcp"
+  }
+
+  listener {
+    instance_port = "9100"
+    instance_protocol = "tcp"
+    lb_port = "9100"
+    lb_protocol = "tcp"
+  }
+
+  listener {
+    instance_port = "8080"
+    instance_protocol = "tcp"
+    lb_port = "8080"
+    lb_protocol = "tcp"
+  }
+
+  listener {
+    instance_port = "9093"
+    instance_protocol = "tcp"
+    lb_port = "9093"
+    lb_protocol = "tcp"
+  }
+
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 5
+    timeout = 5
+    target = "TCP:9090"
+    interval = "30"
+  }
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s-monitoring-%s",
+                  lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                  lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+            )
+        )
+    )}"
+}
+
 data "aws_iam_policy_document" "monitoring_assume_role_policy_document" {
 
   statement {
@@ -440,6 +589,7 @@ data "template_file" "user_data" {
 
   vars {
     efs_id = "${aws_efs_file_system.monitoring_efs.id}"
+    monitoring_elb_dns_name = "${aws_elb.monitoring_internal_elb.dns_name}"
     ecs_cluster_name = "${format("%s_monitoring_cluster_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
@@ -572,6 +722,10 @@ data "template_file" "monitoring_node_exporter_task_template" {
 
 data "template_file" "monitoring_prometheus_task_template" {
   template = "${file("${path.module}/templates/monitoring_prometheus.json.tpl")}"
+
+  vars {
+    monitoring_elb_dns_name = "${aws_elb.monitoring_internal_elb.dns_name}"
+  }
 }
 
 data "template_file" "monitoring_alertmanager_task_template" {
@@ -676,6 +830,14 @@ resource "aws_ecs_service" "monitoring_cadvisor_ecs_service" {
   task_definition = "${aws_ecs_task_definition.monitoring_cadvisor_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"
 
+  iam_role = "${aws_iam_role.monitoring_role.arn}"
+
+  load_balancer {
+    elb_name = "${aws_elb.monitoring_internal_elb.name}"
+    container_name = "cadvisor"
+    container_port = 8080
+  }
+
   depends_on = [
     "aws_autoscaling_group.monitoring_asg"
   ]
@@ -691,6 +853,14 @@ resource "aws_ecs_service" "monitoring_node_exporter_ecs_service" {
   task_definition = "${aws_ecs_task_definition.monitoring_node_exporter_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"
 
+  iam_role = "${aws_iam_role.monitoring_role.arn}"
+
+  load_balancer {
+    elb_name = "${aws_elb.monitoring_internal_elb.name}"
+    container_name = "nodeexporter"
+    container_port = 9100
+  }
+
   depends_on = [
     "aws_autoscaling_group.monitoring_asg"
   ]
@@ -705,6 +875,37 @@ resource "aws_ecs_service" "monitoring_prometheus_ecs_service" {
   cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
   task_definition = "${aws_ecs_task_definition.monitoring_prometheus_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"
+
+  iam_role = "${aws_iam_role.monitoring_role.arn}"
+
+  load_balancer {
+    elb_name = "${aws_elb.monitoring_internal_elb.name}"
+    container_name = "prometheus"
+    container_port = 9090
+  }
+
+  depends_on = [
+    "aws_autoscaling_group.monitoring_asg"
+  ]
+}
+
+resource "aws_ecs_service" "monitoring_alertmanager_ecs_service" {
+  name = "${format("%s_monitoring_alertmanager_service_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
+  cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
+  task_definition = "${aws_ecs_task_definition.monitoring_alertmanager_ecs_task.arn}"
+  desired_count = "${var.service_desired_count}"
+
+  iam_role = "${aws_iam_role.monitoring_role.arn}"
+
+  load_balancer {
+    elb_name = "${aws_elb.monitoring_internal_elb.name}"
+    container_name = "alertmanager"
+    container_port = 9093
+  }
 
   depends_on = [
     "aws_autoscaling_group.monitoring_asg"

@@ -12,9 +12,6 @@
         "protocol": "tcp"
       }
     ],
-    "dockerLabels": {
-        "org.label-schema.group": "monitoring"
-    },
     "essential": true,
     "privileged": true
   }

@@ -38,9 +38,6 @@
         "containerPath": "/cgroup",
         "readOnly": true
       }
-    ],
-    "dockerLabels": {
-        "org.label-schema.group": "monitoring"
-    }
+    ]
   }
 ]

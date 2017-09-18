@@ -1,19 +1,11 @@
-global:
-  slack_api_url: 'https://hooks.slack.com/services/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'
-
 route:
-  group_wait: 30s
-  group_by: [alertname, __meta_ec2_tag_Environment, __meta_ec2_tag_Service]
-  group_interval: 5m
-  repeat_interval: 24h
-  receiver: 'slack-notifications'
-
-  routes:
-    - receiver: slack-notifications
+    receiver: 'slack'
 
 receivers:
-- name: 'slack-notifications'
-  slack_configs:
-  - channel: '{{ alert_slack_channel }}'
-    text: 'Instances: {{ range .Alerts }}{{ .Labels.instance }} {{ end }}'
-    send_resolved: true
+    - name: 'slack'
+      slack_configs:
+          - send_resolved: true
+            text: "{{ .CommonAnnotations.description }}"
+            username: 'Prometheus'
+            channel: '#<channel-name>'
+            api_url: 'https://hooks.slack.com/services/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'
