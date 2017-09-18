@@ -361,7 +361,7 @@ resource "aws_elb" "monitoring_grafana_elb" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s-jenkins-proxy-%s",
+            "Name", format("%s-grafana-proxy-%s",
                   lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                   lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )

@@ -2,11 +2,13 @@ data "null_data_source" "outputs" {
   inputs {
     monitoring_key_pair_name = "${aws_key_pair.monitoring_key_pair.key_name}"
     monitoring_security_group_id = "${aws_security_group.monitoring_security_group.id}"
+    monitoring_internal_elb_security_group_id = "${aws_security_group.monitoring_internal_elb_security_group.id}"
     monitoring_grafana_elb_security_group_id = "${aws_security_group.monitoring_grafana_elb_security_group.id}"
     monitoring_efs_security_group_id = "${aws_security_group.monitoring_efs_security_group.id}"
     monitoring_efs_id = "${aws_efs_file_system.monitoring_efs.id}"
     monitoring_efs_mount_target_ids = "${join(",", aws_efs_mount_target.monitoring_efs_mount_target.*.id)}"
     monitoring_grafana_elb_dns_name = "${aws_elb.monitoring_grafana_elb.dns_name}"
+    monitoring_internal_elb_dns_name = "${aws_elb.monitoring_internal_elb.dns_name}"
     monitoring_role_arn = "${aws_iam_role.monitoring_role.arn}"
     monitoring_iam_instance_profile_id = "${aws_iam_instance_profile.monitoring_instance_profile.id}"
     monitoring_iam_instance_profile_arn = "${aws_iam_instance_profile.monitoring_instance_profile.arn}"
@@ -23,10 +25,12 @@ data "null_data_source" "outputs" {
     monitoring_node_exporter_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_node_exporter_ecs_task.arn}"
     monitoring_grafana_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_grafana_ecs_task.arn}"
     monitoring_prometheus_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_prometheus_ecs_task.arn}"
+    monitoring_alertmanager_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_alertmanager_ecs_task.arn}"
     monitoring_cadvisor_ecs_service_id = "${aws_ecs_service.monitoring_cadvisor_ecs_service.id}"
-    monitoring_node_exporter_ecs_service = "${aws_ecs_service.monitoring_node_exporter_ecs_service.id}"
-    monitoring_grafana_ecs_service = "${aws_ecs_service.monitoring_grafana_ecs_service.id}"
-    monitoring_prometheus_ecs_service = "${aws_ecs_service.monitoring_prometheus_ecs_service.id}"
+    monitoring_node_exporter_ecs_service_id = "${aws_ecs_service.monitoring_node_exporter_ecs_service.id}"
+    monitoring_grafana_ecs_service_id = "${aws_ecs_service.monitoring_grafana_ecs_service.id}"
+    monitoring_prometheus_ecs_service_id = "${aws_ecs_service.monitoring_prometheus_ecs_service.id}"
+    monitoring_alertmanager_ecs_service_id = "${aws_ecs_service.monitoring_alertmanager_ecs_service.id}"
   }
 }
 

@@ -59,10 +59,6 @@ variable "jenkins_slave_image_name" {}
 variable "bitbucket_public_key" {}
 variable "bitbucket_web_whitelist" { type = "map" }
 
-# Artifactory
-variable "artifactory_public_key" {}
-variable "artifactory_web_whitelist" { type = "map" }
-
 # Monitoring
 variable "monitoring_public_key" {}
 variable "monitoring_web_whitelist" { type = "map" }
@@ -74,3 +70,15 @@ variable "tag_monitoring_service" {}
 variable "tag_monitoring_app_operations_owner" {}
 variable "tag_monitoring_system_owner" {}
 variable "tag_monitoring_budget_owner" {}
+
+# Discovery
+variable "discovery_public_key" {}
+variable "discovery_web_whitelist" { type = "map" }
+variable "tag_discovery_resource_name" {}
+variable "tag_discovery_project_name" {}
+variable "tag_discovery_environment" {}
+variable "tag_discovery_cost_center" {}
+variable "tag_discovery_service" {}
+variable "tag_discovery_app_operations_owner" {}
+variable "tag_discovery_system_owner" {}
+variable "tag_discovery_budget_owner" {}

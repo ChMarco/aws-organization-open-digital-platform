@@ -13,6 +13,7 @@ data "null_data_source" "vpc_outputs" {
     igw_id = "${aws_internet_gateway.vpc_igw.id}"
     vgw_id = "${aws_vpn_gateway.vpn_gw.id}"
     vpc_monitoring_secuirty_group = "${aws_security_group.monitoring_security_group.id}"
+    vpc_discovery_secuirty_group = "${aws_security_group.discovery_security_group.id}"
     vpc_shortname = "${var.vpc_shortname}"
     vpc_description = "${var.vpc_description}"
     name_prefix = "${lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")}"
