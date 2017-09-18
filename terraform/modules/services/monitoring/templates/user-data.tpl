@@ -3,6 +3,9 @@
 prometheus="/mnt/efs/prometheus.yml"
 alertmanager="/mnt/efs/alertmanager.yml"
 
+EC2_INSTANCE_IP_ADDRESS=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+EC2_INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+
 echo ECS_CLUSTER='${ecs_cluster_name}' > /etc/ecs/ecs.config
 
 yum-config-manager --enable epel
@@ -105,6 +108,16 @@ receivers:
     send_resolved: true
 EOF
 
+usermod -a -G docker ec2-user
+
+mkdir -p /opt/consul-registrator/bin
+
+cat << EOF > /opt/consul-registrator/bin/start.sh
+#!/bin/sh
+exec /bin/registrator -ip $${EC2_INSTANCE_IP_ADDRESS} -retry-attempts -1 consul://$${EC2_INSTANCE_IP_ADDRESS}:8500
+EOF
+
+chmod a+x /opt/consul-registrator/bin/start.sh
 
 service docker restart
 start ecs

@@ -614,7 +614,8 @@ resource "aws_launch_configuration" "monitoring_launch_configuration" {
   key_name = "${aws_key_pair.monitoring_key_pair.key_name}"
   security_groups = [
     "${aws_security_group.monitoring_security_group.id}",
-    "${var.monitoring_security_group}"
+    "${var.monitoring_security_group}",
+    "${var.discovery_security_group}",
   ]
 
   iam_instance_profile = "${coalesce(
@@ -928,6 +929,105 @@ resource "aws_ecs_service" "monitoring_grafana_ecs_service" {
     elb_name = "${aws_elb.monitoring_grafana_elb.name}"
     container_name = "grafana"
     container_port = 3000
+  }
+
+  depends_on = [
+    "aws_autoscaling_group.monitoring_asg"
+  ]
+}
+
+# Discovery
+
+## Agent
+
+data "template_file" "discovery_consul_agent_task_template" {
+  template = "${file("${path.module}/templates/discovery_consul_agent.json.tpl")}"
+
+  vars {
+    bootstrap_expect = "${var.service_desired_count}"
+    consul_dc = "dc01"
+    join = "${format("%s_discovery_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+  }
+}
+
+resource "aws_ecs_task_definition" "discovery_consul_agent_ecs_task" {
+  family = "discovery"
+  container_definitions = "${data.template_file.discovery_consul_agent_task_template.rendered}"
+
+  task_role_arn = "${aws_iam_role.monitoring_role.arn}"
+
+  network_mode = "host"
+
+  volume {
+    host_path = "/etc/consul.d"
+    name = "consul_config"
+  }
+
+  volume {
+    host_path = "/var/lib/consul"
+    name = "consul_data"
+  }
+}
+
+resource "aws_ecs_service" "discovery_consul_agent_ecs_service" {
+  name = "${format("%s_discovery_consul_agent_service_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
+  cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
+  task_definition = "${aws_ecs_task_definition.discovery_consul_agent_ecs_task.arn}"
+  desired_count = "${var.service_desired_count}"
+
+  placement_constraints {
+    type = "distinctInstance"
+  }
+
+  depends_on = [
+    "aws_autoscaling_group.monitoring_asg"
+  ]
+}
+
+## Registrator
+
+data "template_file" "discovery_consul_registrator_task_template" {
+  template = "${file("${path.module}/templates/discovery_consul_registrator.json.tpl")}"
+}
+
+resource "aws_ecs_task_definition" "discovery_consul_registrator_ecs_task" {
+  family = "discovery"
+  container_definitions = "${data.template_file.discovery_consul_registrator_task_template.rendered}"
+
+  task_role_arn = "${aws_iam_role.monitoring_role.arn}"
+
+  network_mode = "host"
+
+  volume {
+    host_path = "/opt/consul-registrator/bin"
+    name = "consul_registrator_bin"
+  }
+
+  volume {
+    host_path = "/var/run/docker.sock"
+    name = "docker_socket"
+  }
+}
+
+resource "aws_ecs_service" "discovery_consul_registrator_ecs_service" {
+  name = "${format("%s_discovery_consul_registrator_service_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
+  cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
+  task_definition = "${aws_ecs_task_definition.discovery_consul_registrator_ecs_task.arn}"
+  desired_count = "${var.service_desired_count}"
+
+  placement_constraints {
+    type = "distinctInstance"
   }
 
   depends_on = [

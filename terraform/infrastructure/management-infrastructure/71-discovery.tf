@@ -10,8 +10,8 @@ module "discovery" {
   discovery_ssh_bastion_access = "${lookup(module.bastion.bastion_outputs, "bastion_security_group_id")}"
   discovery_web_whitelist = "${var.discovery_web_whitelist}"
 
-  monitoring_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_monitoring_secuirty_group")}"
-  discovery_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_discovery_secuirty_group")}"
+  monitoring_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_monitoring_security_group")}"
+  discovery_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_discovery_security_group")}"
   deploy_environment = "${var.deploy_environment}"
 
   tag_resource_name = "${var.tag_discovery_resource_name}"

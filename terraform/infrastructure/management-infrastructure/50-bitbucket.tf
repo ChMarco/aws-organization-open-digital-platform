@@ -11,7 +11,7 @@
 //  bitbucket_ssh_bastion_access = "${lookup(module.bastion.bastion_outputs, "bastion_security_group_id")}"
 //  bitbucket_web_whitelist = "${var.bitbucket_web_whitelist}"
 //
-//  monitoring_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_monitoring_secuirty_group")}"
+//  monitoring_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_monitoring_security_group")}"
 //  deploy_environment = "${var.deploy_environment}"
 //
 //  tag_resource_name = "${var.tag_bitbucket_resource_name}"

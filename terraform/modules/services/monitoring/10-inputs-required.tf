@@ -10,6 +10,7 @@ variable "monitoring_ssh_bastion_access" {}
 variable "monitoring_web_whitelist" { type = "map" default = {} }
 
 variable "monitoring_security_group" {}
+variable "discovery_security_group" {}
 variable "deploy_environment" {}
 
 # Tags

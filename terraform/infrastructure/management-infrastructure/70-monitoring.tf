@@ -10,7 +10,8 @@ module "monitoring" {
   monitoring_ssh_bastion_access = "${lookup(module.bastion.bastion_outputs, "bastion_security_group_id")}"
   monitoring_web_whitelist = "${var.monitoring_web_whitelist}"
 
-  monitoring_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_monitoring_secuirty_group")}"
+  monitoring_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_monitoring_security_group")}"
+  discovery_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_discovery_security_group")}"
   deploy_environment = "${var.deploy_environment}"
 
   tag_resource_name = "${var.tag_monitoring_resource_name}"
