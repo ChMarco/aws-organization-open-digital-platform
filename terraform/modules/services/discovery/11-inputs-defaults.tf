@@ -24,3 +24,5 @@ variable "discovery_ami" {
         "ap-southeast-2" = "ami-697a540a"
     }
 }
+
+variable "tag_Monitoring" { default = "On" }

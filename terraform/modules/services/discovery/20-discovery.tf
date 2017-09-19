@@ -557,6 +557,11 @@ resource "aws_autoscaling_group" "discovery_asg" {
     propagate_at_launch = true
   }
   tag {
+    key = "Monitoring"
+    value = "${lookup(data.null_data_source.tag_defaults.inputs, "Monitoring")}"
+    propagate_at_launch = true
+  }
+  tag {
     key = "Created_By"
     value = "${lookup(data.null_data_source.tag_defaults.inputs, "Created_By")}"
     propagate_at_launch = true
@@ -602,7 +607,7 @@ resource "aws_ecs_task_definition" "discovery_consul_ecs_task" {
 }
 
 resource "aws_ecs_service" "discovery_consul_ecs_service" {
-  name = "${format("%s_discovery_prometheus_service_%s",
+  name = "${format("%s_discovery_consul_service_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
@@ -626,4 +631,15 @@ resource "aws_ecs_service" "discovery_consul_ecs_service" {
   depends_on = [
     "aws_autoscaling_group.discovery_asg"
   ]
+}
+
+# Monitoring
+
+module "monitoring_agents" {
+  source = "../monitoring-agents"
+
+  vpc_shortname = "${var.vpc_shortname}"
+  ecs_cluster = "${aws_ecs_cluster.discovery_ecs_cluster.id}"
+
+  tag_environment = "${var.tag_environment}"
 }

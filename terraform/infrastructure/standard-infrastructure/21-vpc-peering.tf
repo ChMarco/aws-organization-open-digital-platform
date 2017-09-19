@@ -1,5 +1,5 @@
 module "vpc_peering" {
-  source = "../../modules/vpc-peering"
+  source = "../../modules/networking/vpc-peering"
 
   mgmt_vpc_id = "${var.mgmt_vpc_id}"
   mgmt_vpc_cidr = "${var.mgmt_vpc_cidr}"

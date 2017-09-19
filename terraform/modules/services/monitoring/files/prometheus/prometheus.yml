@@ -39,7 +39,7 @@ scrape_configs:
       - source_labels: [__meta_ec2_tag_Monitoring]
         regex: On
         action: keep
-      - source_labels: [__meta_ec2_tag_Name]
+      - source_labels: [__meta_ec2_instance_id]
         target_label: instance
       - source_labels: [__meta_ec2_tag_Environment]
         target_label: env
@@ -54,7 +54,7 @@ scrape_configs:
       - source_labels: [__meta_ec2_tag_Monitoring]
         regex: On
         action: keep
-      - source_labels: [__meta_ec2_tag_Name]
+      - source_labels: [__meta_ec2_instance_id]
         target_label: instance
       - source_labels: [__meta_ec2_tag_Environment]
         target_label: env

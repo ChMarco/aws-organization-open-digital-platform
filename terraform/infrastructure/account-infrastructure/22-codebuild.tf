@@ -1,5 +1,5 @@
 module "codebuild_jenkins" {
-  source = "../../modules/codebuild"
+  source = "../../modules/components/codebuild"
 
   aws_region = "${var.aws_region}"
 

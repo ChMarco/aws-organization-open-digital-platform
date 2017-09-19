@@ -43,12 +43,12 @@ scrape_configs:
   - job_name: 'nodeexporter'
     scrape_interval: 5s
     static_configs:
-      - targets: ['${monitoring_elb_dns_name}:9100']
+      - targets: ['localhost:9100']
 
   - job_name: 'cadvisor'
     scrape_interval: 5s
     static_configs:
-      - targets: ['${monitoring_elb_dns_name}:8080']
+      - targets: ['localhost:8080']
 
   - job_name: 'prometheus'
     scrape_interval: 10s

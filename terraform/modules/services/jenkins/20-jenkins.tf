@@ -205,6 +205,60 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
 
 }
 
+resource "aws_security_group" "linkerd_elb_security_group" {
+
+  name = "${format("%s_linkerd_elb_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+  description = "${format("%s Linkerd elb Security Group",
+        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
+    )}"
+
+  vpc_id = "${var.vpc_id}"
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+  }
+
+  ingress {
+    from_port = 9990
+    protocol = "6"
+    to_port = 9990
+    cidr_blocks = [
+      "${compact(
+              split(",",
+                  replace(
+                      join(",", values(var.jenkins_web_whitelist)),
+                      "0.0.0.0/0",
+                      ""
+                  )
+              )
+          )}"
+    ]
+  }
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s_linkerd_elb_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+            )
+        )
+    )}"
+
+  lifecycle {
+    create_before_destroy = "true"
+  }
+
+}
+
 resource "aws_security_group" "jenkins_efs_security_group" {
 
   name = "${format("%s_jenkins_efs_%s",
@@ -375,6 +429,53 @@ resource "aws_elb" "jenkins_proxy_elb" {
     )}"
 }
 
+resource "aws_elb" "linkerd_elb" {
+
+  name = "${format("%s-linkerd-%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+
+  subnets = [
+    "${split(",", var.jenkins_elb_subnets)}"
+  ]
+
+  security_groups = [
+    "${aws_security_group.jenkins_security_group.id}",
+    "${aws_security_group.jenkins_proxy_elb_security_group.id}"
+  ]
+
+  cross_zone_load_balancing = true
+  idle_timeout = 60
+  connection_draining = true
+  connection_draining_timeout = 300
+
+  listener {
+    instance_port = "9990"
+    instance_protocol = "tcp"
+    lb_port = "80"
+    lb_protocol = "tcp"
+  }
+
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 5
+    timeout = 5
+    target = "HTTP:9990/"
+    interval = "30"
+  }
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s-linkerd-%s",
+                  lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                  lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+            )
+        )
+    )}"
+}
+
 data "aws_iam_policy_document" "jenkins_assume_role_policy_document" {
 
   statement {
@@ -525,6 +626,7 @@ data "template_file" "user_data" {
   vars {
     efs_id = "${aws_efs_file_system.jenkins_efs.id}"
     jenkins_elb_dns_name = "${aws_elb.jenkins_elb.dns_name}"
+    consul_dc = "${data.aws_caller_identity.current.account_id}-${var.aws_region}"
     ecs_cluster_name = "${format("%s_jenkins_cluster_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
@@ -742,176 +844,67 @@ resource "aws_ecs_service" "jenkins_proxy_ecs_service" {
 
 # Monitoring
 
-data "template_file" "monitoring_cadvisor_task_template" {
-  template = "${file("${path.module}/templates/monitoring_cadvisor.json.tpl")}"
-}
+module "monitoring_agents" {
+  source = "../monitoring-agents"
 
-data "template_file" "monitoring_node_exporter_task_template" {
-  template = "${file("${path.module}/templates/monitoring_node_exporter.json.tpl")}"
-}
+  vpc_shortname = "${var.vpc_shortname}"
+  ecs_cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
 
-resource "aws_ecs_task_definition" "monitoring_cadvisor_ecs_task" {
-  family = "monitoring"
-  container_definitions = "${data.template_file.monitoring_cadvisor_task_template.rendered}"
-
-  volume {
-    name = "root"
-    host_path = "/"
-  }
-
-  volume {
-    name = "var_run"
-    host_path = "/var/run"
-  }
-
-  volume {
-    name = "sys"
-    host_path = "/sys"
-  }
-
-  volume {
-    name = "var_lib_docker"
-    host_path = "/var/lib/docker/"
-  }
-
-  volume {
-    name = "cgroup"
-    host_path = "/cgroup"
-  }
-}
-
-resource "aws_ecs_task_definition" "monitoring_node_exporter_ecs_task" {
-  family = "monitoring"
-  container_definitions = "${data.template_file.monitoring_node_exporter_task_template.rendered}"
-
-  network_mode = "host"
-}
-
-resource "aws_ecs_service" "monitoring_cadvisor_ecs_service" {
-  name = "${format("%s_monitoring_cadvisor_service_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-
-  cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.monitoring_cadvisor_ecs_task.arn}"
-  desired_count = "${var.service_desired_count}"
-
-  depends_on = [
-    "aws_autoscaling_group.jenkins_asg"
-  ]
-}
-
-resource "aws_ecs_service" "monitoring_node_exporter_ecs_service" {
-  name = "${format("%s_monitoring_node_exporter_service_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-
-  cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.monitoring_node_exporter_ecs_task.arn}"
-  desired_count = "${var.service_desired_count}"
-
-  depends_on = [
-    "aws_autoscaling_group.jenkins_asg"
-  ]
+  tag_environment = "${var.tag_environment}"
 }
 
 # Discovery
 
-## Agent
+module "discovery_agents" {
+  source = "../discovery-agents"
 
-data "template_file" "discovery_consul_agent_task_template" {
-  template = "${file("${path.module}/templates/discovery_consul_agent.json.tpl")}"
+  aws_region = "${var.aws_region}"
 
-  vars {
-    bootstrap_expect = "${var.service_desired_count}"
-    consul_dc = "dc01"
-    join = "${format("%s_discovery_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-  }
+  vpc_shortname = "${var.vpc_shortname}"
+  task_role = "${aws_iam_role.jenkins_role.arn}"
+  ecs_cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
+
+  tag_environment = "${var.tag_environment}"
+
 }
 
-resource "aws_ecs_task_definition" "discovery_consul_agent_ecs_task" {
+## Linkerd
+
+data "template_file" "discovery_linkerd_task_template" {
+  template = "${file("${path.module}/templates/discovery_linkerd.json.tpl")}"
+}
+
+resource "aws_ecs_task_definition" "discovery_linkerd_ecs_task" {
   family = "discovery"
-  container_definitions = "${data.template_file.discovery_consul_agent_task_template.rendered}"
+  container_definitions = "${data.template_file.discovery_linkerd_task_template.rendered}"
 
   task_role_arn = "${aws_iam_role.jenkins_role.arn}"
 
-  network_mode = "host"
-
   volume {
-    host_path = "/etc/consul.d"
-    name = "consul_config"
-  }
-
-  volume {
-    host_path = "/var/lib/consul"
-    name = "consul_data"
+    host_path = "/etc/linkerd"
+    name = "linkerd_config"
   }
 }
 
-resource "aws_ecs_service" "discovery_consul_agent_ecs_service" {
-  name = "${format("%s_discovery_consul_agent_service_%s",
+resource "aws_ecs_service" "discovery_linkerd_ecs_service" {
+  name = "${format("%s_discovery_linkerd_service_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
 
   cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.discovery_consul_agent_ecs_task.arn}"
+  task_definition = "${aws_ecs_task_definition.discovery_linkerd_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"
+
+  iam_role = "${aws_iam_role.jenkins_role.arn}"
+
+  load_balancer {
+    elb_name = "${aws_elb.linkerd_elb.name}"
+    container_name = "linkerd"
+    container_port = 9990
+  }
 
   placement_constraints {
     type = "distinctInstance"
   }
-
-  depends_on = [
-    "aws_autoscaling_group.jenkins_asg"
-  ]
-}
-
-## Registrator
-
-data "template_file" "discovery_consul_registrator_task_template" {
-  template = "${file("${path.module}/templates/discovery_consul_registrator.json.tpl")}"
-}
-
-resource "aws_ecs_task_definition" "discovery_consul_registrator_ecs_task" {
-  family = "discovery"
-  container_definitions = "${data.template_file.discovery_consul_registrator_task_template.rendered}"
-
-  task_role_arn = "${aws_iam_role.jenkins_role.arn}"
-
-  network_mode = "host"
-
-  volume {
-    host_path = "/opt/consul-registrator/bin"
-    name = "consul_registrator_bin"
-  }
-
-  volume {
-    host_path = "/var/run/docker.sock"
-    name = "docker_socket"
-  }
-}
-
-resource "aws_ecs_service" "discovery_consul_registrator_ecs_service" {
-  name = "${format("%s_discovery_consul_registrator_service_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-
-  cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.discovery_consul_registrator_ecs_task.arn}"
-  desired_count = "${var.service_desired_count}"
-
-  placement_constraints {
-    type = "distinctInstance"
-  }
-
-  depends_on = [
-    "aws_autoscaling_group.jenkins_asg"
-  ]
 }

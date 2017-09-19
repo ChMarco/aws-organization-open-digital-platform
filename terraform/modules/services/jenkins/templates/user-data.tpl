@@ -41,6 +41,10 @@ chmod -R 777 /mnt/efs
 
 usermod -a -G docker ec2-user
 
+#
+# Generate consul-registrator startup file
+#
+
 mkdir -p /opt/consul-registrator/bin
 
 cat << EOF > /opt/consul-registrator/bin/start.sh
@@ -49,6 +53,64 @@ exec /bin/registrator -ip $${EC2_INSTANCE_IP_ADDRESS} -retry-attempts -1 consul:
 EOF
 
 chmod a+x /opt/consul-registrator/bin/start.sh
+
+#
+# Generate linkerd config file
+#
+
+# The linkerd ECS task definition is configured to mount this config file into
+# its own Docker environment.
+
+mkdir -p /etc/linkerd
+
+cat << EOF > /etc/linkerd/linkerd.yaml
+admin:
+  ip: 0.0.0.0
+  port: 9990
+
+namers:
+- kind: io.l5d.consul
+  host: $${EC2_INSTANCE_IP_ADDRESS}
+  includeTag: true
+  useHealthCheck: false
+  port: 8500
+
+telemetry:
+- kind: io.l5d.prometheus
+- kind: io.l5d.recentRequests
+  sampleRate: 0.25
+
+usage:
+  orgId:
+
+routers:
+- protocol: http
+  label: outgoing
+  servers:
+  - ip: 0.0.0.0
+    port: 4140
+  interpreter:
+    kind: default
+    transformers:
+    # tranform all outgoing requests to deliver to incoming linkerd port 4141
+    - kind: io.l5d.port
+      port: 4141
+  dtab: |
+    /svc => /#/io.l5d.consul/${consul_dc};
+- protocol: http
+  label: incoming
+  servers:
+  - ip: 0.0.0.0
+    port: 4141
+  interpreter:
+    kind: default
+    transformers:
+    # filter instances to only include those on this host
+    - kind: io.l5d.specificHost
+      host: $${EC2_INSTANCE_IP_ADDRESS}
+  dtab: |
+    /svc => /#/io.l5d.consul/${consul_dc};
+EOF
 
 service docker restart
 start ecs

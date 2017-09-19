@@ -29,6 +29,8 @@ data "null_data_source" "outputs" {
 
 output "jenkins_outputs" {
   value = "${merge(
-        data.null_data_source.outputs.inputs
+        data.null_data_source.outputs.inputs,
+        module.monitoring_agents.monitoring_agents_outputs,
+        module.discovery_agents.discovery_agents_outputs
     )}"
 }

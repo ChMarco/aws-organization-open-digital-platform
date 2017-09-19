@@ -1,5 +1,5 @@
 module "vpc" {
-  source = "../../modules/vpc"
+  source = "../../modules/networking/vpc"
 
   aws_region = "${var.aws_region}"
   vpc_description = "${var.vpc_description}-${var.deploy_environment}"

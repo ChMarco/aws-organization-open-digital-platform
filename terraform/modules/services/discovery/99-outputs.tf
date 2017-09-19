@@ -6,9 +6,9 @@ data "null_data_source" "outputs" {
     discovery_efs_security_group_id = "${aws_security_group.discovery_efs_security_group.id}"
     discovery_efs_id = "${aws_efs_file_system.discovery_efs.id}"
     discovery_efs_mount_target_ids = "${join(",", aws_efs_mount_target.discovery_efs_mount_target.*.id)}"
-    discovery_grafana_alb_dns_name = "${aws_alb.discovery_consul_alb.dns_name}"
-    discovery_grafana_alb_target_group_arn = "${aws_alb_target_group.discovery_consul_alb_target_group.arn}"
-    discovery_grafana_alb_listner_arn = "${aws_alb_listener.discovery_consul_alb_listener.arn}"
+    discovery_consul_alb_dns_name = "${aws_alb.discovery_consul_alb.dns_name}"
+    discovery_consul_alb_target_group_arn = "${aws_alb_target_group.discovery_consul_alb_target_group.arn}"
+    discovery_consul_alb_listner_arn = "${aws_alb_listener.discovery_consul_alb_listener.arn}"
     discovery_role_arn = "${aws_iam_role.discovery_role.arn}"
     discovery_iam_instance_profile_id = "${aws_iam_instance_profile.discovery_instance_profile.id}"
     discovery_iam_instance_profile_arn = "${aws_iam_instance_profile.discovery_instance_profile.arn}"
@@ -28,6 +28,7 @@ data "null_data_source" "outputs" {
 
 output "discovery_outputs" {
   value = "${merge(
-        data.null_data_source.outputs.inputs
+        data.null_data_source.outputs.inputs,
+        module.monitoring_agents.monitoring_agents_outputs
     )}"
 }

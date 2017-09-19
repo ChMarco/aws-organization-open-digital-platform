@@ -151,6 +151,15 @@ resource "aws_security_group" "monitoring_internal_elb_security_group" {
     ]
   }
 
+  ingress {
+    from_port = 8500
+    to_port = 8500
+    protocol = "6"
+    security_groups = [
+      "${aws_security_group.monitoring_security_group.id}"
+    ]
+  }
+
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
@@ -416,6 +425,13 @@ resource "aws_elb" "monitoring_internal_elb" {
     instance_port = "9093"
     instance_protocol = "tcp"
     lb_port = "9093"
+    lb_protocol = "tcp"
+  }
+
+  listener {
+    instance_port = "8500"
+    instance_protocol = "tcp"
+    lb_port = "8500"
     lb_protocol = "tcp"
   }
 
@@ -740,6 +756,8 @@ data "template_file" "monitoring_grafana_task_template" {
 resource "aws_ecs_task_definition" "monitoring_cadvisor_ecs_task" {
   family = "monitoring"
   container_definitions = "${data.template_file.monitoring_cadvisor_task_template.rendered}"
+
+  network_mode = "host"
 
   volume {
     name = "root"
