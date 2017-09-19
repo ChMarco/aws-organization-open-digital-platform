@@ -945,7 +945,7 @@ data "template_file" "discovery_consul_agent_task_template" {
 
   vars {
     bootstrap_expect = "${var.service_desired_count}"
-    consul_dc = "dc01"
+    consul_dc = "${data.aws_caller_identity.current.account_id}-${var.aws_region}"
     join = "${format("%s_discovery_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
