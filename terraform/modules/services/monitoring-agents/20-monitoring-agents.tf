@@ -62,6 +62,10 @@ resource "aws_ecs_service" "monitoring_cadvisor_ecs_service" {
   cluster = "${var.ecs_cluster}"
   task_definition = "${aws_ecs_task_definition.monitoring_cadvisor_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"
+
+  placement_constraints {
+    type = "${var.placement_constraints}"
+  }
 }
 
 resource "aws_ecs_service" "monitoring_node_exporter_ecs_service" {
@@ -73,4 +77,8 @@ resource "aws_ecs_service" "monitoring_node_exporter_ecs_service" {
   cluster = "${var.ecs_cluster}"
   task_definition = "${aws_ecs_task_definition.monitoring_node_exporter_ecs_task.arn}"
   desired_count = "${var.service_desired_count}"
+
+  placement_constraints {
+    type = "${var.placement_constraints}"
+  }
 }

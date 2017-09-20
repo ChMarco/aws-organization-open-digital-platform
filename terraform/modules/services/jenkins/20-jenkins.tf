@@ -849,6 +849,8 @@ module "monitoring_agents" {
 
   vpc_shortname = "${var.vpc_shortname}"
   ecs_cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
+  placement_constraints = "distinctInstance"
+  service_desired_count = "1"
 
   tag_environment = "${var.tag_environment}"
 }
@@ -863,6 +865,8 @@ module "discovery_agents" {
   vpc_shortname = "${var.vpc_shortname}"
   task_role = "${aws_iam_role.jenkins_role.arn}"
   ecs_cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
+  placement_constraints = "distinctInstance"
+  service_desired_count = "1"
 
   tag_environment = "${var.tag_environment}"
 

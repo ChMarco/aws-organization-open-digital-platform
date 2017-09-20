@@ -6,7 +6,6 @@ data "null_data_source" "vpc_defaults" {
   }
 }
 
-variable "service_desired_count" { default = "1" }
 
 data "null_data_source" "tag_defaults" {
   inputs = {

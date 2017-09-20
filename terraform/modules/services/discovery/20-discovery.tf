@@ -640,6 +640,8 @@ module "monitoring_agents" {
 
   vpc_shortname = "${var.vpc_shortname}"
   ecs_cluster = "${aws_ecs_cluster.discovery_ecs_cluster.id}"
+  placement_constraints = "distinctInstance"
+  service_desired_count = "3"
 
   tag_environment = "${var.tag_environment}"
 }

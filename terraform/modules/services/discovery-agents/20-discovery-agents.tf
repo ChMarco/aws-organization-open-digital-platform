@@ -53,7 +53,7 @@ resource "aws_ecs_service" "discovery_consul_agent_ecs_service" {
   desired_count = "${var.service_desired_count}"
 
   placement_constraints {
-    type = "distinctInstance"
+    type = "${var.placement_constraints}"
   }
 }
 
@@ -93,6 +93,6 @@ resource "aws_ecs_service" "discovery_consul_registrator_ecs_service" {
   desired_count = "${var.service_desired_count}"
 
   placement_constraints {
-    type = "distinctInstance"
+    type = "${var.placement_constraints}"
   }
 }
