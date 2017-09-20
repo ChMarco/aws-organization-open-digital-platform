@@ -970,3 +970,26 @@ module "discovery_agents" {
   tag_environment = "${var.tag_environment}"
 
 }
+
+# Backup
+
+module "backup_efs" {
+  source = "../backup/efs-backup"
+
+  vpc_shortname = "${var.vpc_shortname}"
+  task_role = "${aws_iam_role.monitoring_role.arn}"
+  stack_name = "Monitoring"
+
+  efs_name = "${format("%s_Jenkins_efs_backup_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+  ecs_cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
+  efs_id = "${aws_efs_file_system.monitoring_efs.id}"
+  aws_region = "${var.aws_region}"
+  backup_bucket = "adidas-terraform"
+
+
+  service_desired_count = "1"
+  tag_environment = "${var.tag_environment}"
+}

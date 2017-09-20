@@ -29,6 +29,7 @@ data "null_data_source" "outputs" {
 output "discovery_outputs" {
   value = "${merge(
         data.null_data_source.outputs.inputs,
-        module.monitoring_agents.monitoring_agents_outputs
+        module.monitoring_agents.monitoring_agents_outputs,
+        module.backup_efs.efs_backup_outputs
     )}"
 }
