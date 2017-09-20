@@ -20,7 +20,7 @@
       },
       {
         "containerPath": "/consul/data",
-        "sourceVolume": "consul_data",
+        "sourceVolume": "efs-discovery",
         "readOnly": false
       }
     ],

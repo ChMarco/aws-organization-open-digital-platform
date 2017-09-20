@@ -601,8 +601,8 @@ resource "aws_ecs_task_definition" "discovery_consul_ecs_task" {
   }
 
   volume {
-    host_path = "/var/lib/consul"
-    name = "consul_data"
+    host_path = "/mnt/efs"
+    name = "efs-discovery"
   }
 }
 
