@@ -487,6 +487,7 @@ data "aws_iam_policy_document" "jenkins_assume_role_policy_document" {
       identifiers = [
         "ec2.amazonaws.com",
         "ecs.amazonaws.com",
+        "events.amazonaws.com",
         "ecs-tasks.amazonaws.com"
       ]
     }
@@ -870,6 +871,29 @@ module "discovery_agents" {
 
   tag_environment = "${var.tag_environment}"
 
+}
+
+# Backup
+
+module "backup_efs" {
+  source = "../backup/efs-backup"
+
+  vpc_shortname = "${var.vpc_shortname}"
+  task_role = "${aws_iam_role.jenkins_role.arn}"
+  stack_name = "Jenkins"
+
+  efs_name = "${format("%s_Jenkins_efs_backup_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+  ecs_cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
+  efs_id = "${aws_efs_file_system.jenkins_efs.id}"
+  aws_region = "${var.aws_region}"
+  backup_bucket = "adidas-terraform"
+
+
+  service_desired_count = "1"
+  tag_environment = "${var.tag_environment}"
 }
 
 ## Linkerd

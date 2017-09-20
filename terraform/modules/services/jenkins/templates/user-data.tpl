@@ -71,8 +71,6 @@ admin:
 namers:
 - kind: io.l5d.consul
   host: $${EC2_INSTANCE_IP_ADDRESS}
-  includeTag: true
-  useHealthCheck: false
   port: 8500
 
 telemetry:
