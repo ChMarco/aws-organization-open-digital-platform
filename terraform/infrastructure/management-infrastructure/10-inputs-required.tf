@@ -82,3 +82,15 @@ variable "tag_discovery_service" {}
 variable "tag_discovery_app_operations_owner" {}
 variable "tag_discovery_system_owner" {}
 variable "tag_discovery_budget_owner" {}
+
+# Secrets
+variable "secrets_public_key" {}
+variable "secrets_web_whitelist" { type = "map" }
+variable "tag_secrets_resource_name" {}
+variable "tag_secrets_project_name" {}
+variable "tag_secrets_environment" {}
+variable "tag_secrets_cost_center" {}
+variable "tag_secrets_service" {}
+variable "tag_secrets_app_operations_owner" {}
+variable "tag_secrets_system_owner" {}
+variable "tag_secrets_budget_owner" {}

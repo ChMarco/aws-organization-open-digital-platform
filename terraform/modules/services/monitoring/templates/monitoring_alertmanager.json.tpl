@@ -22,7 +22,7 @@
         "containerPath": "/alertmanager"
       },
       {
-        "sourceVolume": "efs-monitoring",
+        "sourceVolume": "alertmanager_config",
         "containerPath": "/etc/alertmanager"
       }
     ],

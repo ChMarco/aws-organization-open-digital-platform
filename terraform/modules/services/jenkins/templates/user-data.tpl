@@ -1,6 +1,7 @@
 #!/bin/bash
 
 block="/etc/nginx/nginx.conf"
+consul_registrator="/mnt/efs/consul/consul-registrator/bin/start.sh"
 
 EC2_INSTANCE_IP_ADDRESS=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 EC2_INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
@@ -12,7 +13,7 @@ yum update -y
 yum -y install nfs-utils
 
 mkdir -p /etc/nginx
-touch /etc/nginx/nginx.conf
+
 tee $block > /dev/null <<EOF
 events {
     worker_connections 1024;
@@ -33,6 +34,8 @@ http {
 EOF
 
 mkdir -p /mnt/efs
+mkdir -p /mnt/efs /mnt/efs/consul/consul-registrator/bin
+
 aws_az=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
 aws_region=${aws_region}
 echo $${aws_az}.${efs_id}.efs.$${aws_region}.amazonaws.com:/    /mnt/efs   nfs4    defaults >> /etc/fstab
@@ -45,14 +48,12 @@ usermod -a -G docker ec2-user
 # Generate consul-registrator startup file
 #
 
-mkdir -p /opt/consul-registrator/bin
-
-cat << EOF > /opt/consul-registrator/bin/start.sh
+tee $consul_registrator > /dev/null <<EOF
 #!/bin/sh
 exec /bin/registrator -ip $${EC2_INSTANCE_IP_ADDRESS} -retry-attempts -1 consul://$${EC2_INSTANCE_IP_ADDRESS}:8500
 EOF
 
-chmod a+x /opt/consul-registrator/bin/start.sh
+chmod a+x $consul_registrator
 
 #
 # Generate linkerd config file

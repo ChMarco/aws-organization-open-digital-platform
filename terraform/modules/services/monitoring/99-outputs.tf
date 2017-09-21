@@ -21,13 +21,9 @@ data "null_data_source" "outputs" {
     monitoring_autoscaling_group_id = "${aws_autoscaling_group.monitoring_asg.id}"
     monitoring_autoscaling_group_arn = "${aws_autoscaling_group.monitoring_asg.arn}"
     monitoring_ecs_cluster_id = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
-    monitoring_cadvisor_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_cadvisor_ecs_task.arn}"
-    monitoring_node_exporter_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_node_exporter_ecs_task.arn}"
     monitoring_grafana_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_grafana_ecs_task.arn}"
     monitoring_prometheus_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_prometheus_ecs_task.arn}"
     monitoring_alertmanager_ecs_task_definition_arn = "${aws_ecs_task_definition.monitoring_alertmanager_ecs_task.arn}"
-    monitoring_cadvisor_ecs_service_id = "${aws_ecs_service.monitoring_cadvisor_ecs_service.id}"
-    monitoring_node_exporter_ecs_service_id = "${aws_ecs_service.monitoring_node_exporter_ecs_service.id}"
     monitoring_grafana_ecs_service_id = "${aws_ecs_service.monitoring_grafana_ecs_service.id}"
     monitoring_prometheus_ecs_service_id = "${aws_ecs_service.monitoring_prometheus_ecs_service.id}"
     monitoring_alertmanager_ecs_service_id = "${aws_ecs_service.monitoring_alertmanager_ecs_service.id}"
@@ -37,6 +33,7 @@ data "null_data_source" "outputs" {
 output "monitoring_outputs" {
   value = "${merge(
         data.null_data_source.outputs.inputs,
+        module.monitoring_agents.monitoring_agents_outputs,
         module.discovery_agents.discovery_agents_outputs,
         module.backup_efs.efs_backup_outputs
     )}"

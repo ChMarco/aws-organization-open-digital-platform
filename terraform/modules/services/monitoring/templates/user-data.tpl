@@ -1,7 +1,8 @@
 #!/bin/bash
 
-prometheus="/mnt/efs/prometheus.yml"
-alertmanager="/mnt/efs/alertmanager.yml"
+prometheus="/mnt/efs/prometheus/config/prometheus.yml"
+alertmanager="/mnt/efs/alertmanager/config/alertmanager.yml"
+consul_registrator="/mnt/efs/consul/consul-registrator/bin/start.sh"
 
 EC2_INSTANCE_IP_ADDRESS=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 EC2_INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
@@ -12,8 +13,10 @@ yum-config-manager --enable epel
 yum update -y
 yum -y install nfs-utils
 
-mkdir -p /mnt/efs
-mkdir -p /var/opt/prometheus
+mkdir -p /mnt/efs /mnt/efs/prometheus /mnt/efs/prometheus/config /mnt/efs/prometheus/data
+mkdir -p /mnt/efs /mnt/efs/alertmanager /mnt/efs/alertmanager/config /mnt/efs/alertmanager/data
+mkdir -p /mnt/efs /mnt/efs/consul/consul-registrator/bin
+mkdir -p /mnt/efs /mnt/efs/grafana /mnt/efs/grafana/data
 
 aws_az=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
 aws_region=${aws_region}
@@ -43,12 +46,12 @@ scrape_configs:
   - job_name: 'nodeexporter'
     scrape_interval: 5s
     static_configs:
-      - targets: ['localhost:9100']
+      - targets: ['${monitoring_elb_dns_name}:9100']
 
   - job_name: 'cadvisor'
     scrape_interval: 5s
     static_configs:
-      - targets: ['localhost:8080']
+      - targets: ['${monitoring_elb_dns_name}:8080']
 
   - job_name: 'prometheus'
     scrape_interval: 10s
@@ -63,7 +66,7 @@ scrape_configs:
       - source_labels: [__meta_ec2_tag_Monitoring]
         regex: On
         action: keep
-      - source_labels: [__meta_ec2_tag_Name]
+      - source_labels: [__meta_ec2_instance_id]
         target_label: instance
       - source_labels: [__meta_ec2_tag_Environment]
         target_label: env
@@ -78,7 +81,7 @@ scrape_configs:
       - source_labels: [__meta_ec2_tag_Monitoring]
         regex: On
         action: keep
-      - source_labels: [__meta_ec2_tag_Name]
+      - source_labels: [__meta_ec2_instance_id]
         target_label: instance
       - source_labels: [__meta_ec2_tag_Environment]
         target_label: env
@@ -110,14 +113,12 @@ EOF
 
 usermod -a -G docker ec2-user
 
-mkdir -p /opt/consul-registrator/bin
-
-cat << EOF > /opt/consul-registrator/bin/start.sh
+tee $consul_registrator > /dev/null <<EOF
 #!/bin/sh
 exec /bin/registrator -ip $${EC2_INSTANCE_IP_ADDRESS} -retry-attempts -1 consul://$${EC2_INSTANCE_IP_ADDRESS}:8500
 EOF
 
-chmod a+x /opt/consul-registrator/bin/start.sh
+chmod a+x $consul_registrator
 
 service docker restart
 start ecs

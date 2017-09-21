@@ -1,5 +1,5 @@
 /*
- * Module: Monitoring
+ * Module: Discovery
  *
  * Components:
  *   - discovery_key_pair
@@ -301,6 +301,7 @@ data "aws_iam_policy_document" "discovery_assume_role_policy_document" {
       identifiers = [
         "ec2.amazonaws.com",
         "ecs.amazonaws.com",
+        "events.amazonaws.com",
         "ecs-tasks.amazonaws.com"
       ]
     }
@@ -441,6 +442,8 @@ data "template_file" "user_data" {
 
   vars {
     efs_id = "${aws_efs_file_system.discovery_efs.id}"
+    consul_dc = "${data.aws_caller_identity.current.account_id}-${var.aws_region}"
+    consul_acl_master_token_uuid = "04AEB3B2-45BD-4FCE-9137-ED54BD44023B"
     ecs_cluster_name = "${format("%s_discovery_cluster_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
@@ -596,13 +599,14 @@ resource "aws_ecs_task_definition" "discovery_consul_ecs_task" {
   network_mode = "host"
 
   volume {
-    host_path = "/etc/consul.d"
     name = "consul_config"
+    host_path = "/mnt/efs/consul/config"
+
   }
 
   volume {
-    host_path = "/mnt/efs"
-    name = "efs-discovery"
+    name = "consul_data"
+    host_path = "/mnt/efs/consul/data"
   }
 }
 

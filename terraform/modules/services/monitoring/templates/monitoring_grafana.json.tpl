@@ -28,7 +28,7 @@
     "privileged": true,
     "mountPoints": [
       {
-        "sourceVolume": "efs-monitoring",
+        "sourceVolume": "grafana_data",
         "containerPath": "/var/lib/grafana"
       }
     ],

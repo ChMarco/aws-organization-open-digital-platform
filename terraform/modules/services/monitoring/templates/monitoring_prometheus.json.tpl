@@ -18,7 +18,7 @@
         "containerPath": "/prometheus"
       },
       {
-        "sourceVolume": "efs-monitoring",
+        "sourceVolume": "prometheus_config",
         "containerPath": "/etc/prometheus"
       }
     ],

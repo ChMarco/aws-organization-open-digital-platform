@@ -465,6 +465,7 @@ data "aws_iam_policy_document" "monitoring_assume_role_policy_document" {
       identifiers = [
         "ec2.amazonaws.com",
         "ecs.amazonaws.com",
+        "events.amazonaws.com",
         "ecs-tasks.amazonaws.com"
       ]
     }
@@ -729,14 +730,6 @@ resource "aws_autoscaling_group" "monitoring_asg" {
 
 }
 
-data "template_file" "monitoring_cadvisor_task_template" {
-  template = "${file("${path.module}/templates/monitoring_cadvisor.json.tpl")}"
-}
-
-data "template_file" "monitoring_node_exporter_task_template" {
-  template = "${file("${path.module}/templates/monitoring_node_exporter.json.tpl")}"
-}
-
 data "template_file" "monitoring_prometheus_task_template" {
   template = "${file("${path.module}/templates/monitoring_prometheus.json.tpl")}"
 
@@ -753,57 +746,18 @@ data "template_file" "monitoring_grafana_task_template" {
   template = "${file("${path.module}/templates/monitoring_grafana.json.tpl")}"
 }
 
-resource "aws_ecs_task_definition" "monitoring_cadvisor_ecs_task" {
-  family = "monitoring"
-  container_definitions = "${data.template_file.monitoring_cadvisor_task_template.rendered}"
-
-  network_mode = "host"
-
-  volume {
-    name = "root"
-    host_path = "/"
-  }
-
-  volume {
-    name = "var_run"
-    host_path = "/var/run"
-  }
-
-  volume {
-    name = "sys"
-    host_path = "/sys"
-  }
-
-  volume {
-    name = "var_lib_docker"
-    host_path = "/var/lib/docker/"
-  }
-
-  volume {
-    name = "cgroup"
-    host_path = "/cgroup"
-  }
-}
-
-resource "aws_ecs_task_definition" "monitoring_node_exporter_ecs_task" {
-  family = "monitoring"
-  container_definitions = "${data.template_file.monitoring_node_exporter_task_template.rendered}"
-
-  network_mode = "host"
-}
-
 resource "aws_ecs_task_definition" "monitoring_prometheus_ecs_task" {
   family = "monitoring"
   container_definitions = "${data.template_file.monitoring_prometheus_task_template.rendered}"
 
   volume {
     name = "prometheus_data"
-    host_path = "/var/opt/prometheus"
+    host_path = "/mnt/efs/prometheus/data"
   }
 
   volume {
-    name = "efs-monitoring"
-    host_path = "/mnt/efs"
+    name = "prometheus_config"
+    host_path = "/mnt/efs/prometheus/config"
   }
 }
 
@@ -813,12 +767,12 @@ resource "aws_ecs_task_definition" "monitoring_alertmanager_ecs_task" {
 
   volume {
     name = "alertmanager_data"
-    host_path = "/var/opt/alertmanager"
+    host_path = "/mnt/efs/alertmanager/data"
   }
 
   volume {
-    name = "efs-monitoring"
-    host_path = "/mnt/efs"
+    name = "alertmanager_config"
+    host_path = "/mnt/efs/alertmanager/config"
   }
 }
 
@@ -827,8 +781,8 @@ resource "aws_ecs_task_definition" "monitoring_grafana_ecs_task" {
   container_definitions = "${data.template_file.monitoring_grafana_task_template.rendered}"
 
   volume {
-    name = "efs-monitoring"
-    host_path = "/mnt/efs"
+    name = "grafana_data"
+    host_path = "/mnt/efs/grafana/data"
   }
 }
 
@@ -837,52 +791,6 @@ resource "aws_ecs_cluster" "monitoring_ecs_cluster" {
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
-}
-
-resource "aws_ecs_service" "monitoring_cadvisor_ecs_service" {
-  name = "${format("%s_monitoring_cadvisor_service_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-
-  cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.monitoring_cadvisor_ecs_task.arn}"
-  desired_count = "${var.service_desired_count}"
-
-  iam_role = "${aws_iam_role.monitoring_role.arn}"
-
-  load_balancer {
-    elb_name = "${aws_elb.monitoring_internal_elb.name}"
-    container_name = "cadvisor"
-    container_port = 8080
-  }
-
-  depends_on = [
-    "aws_autoscaling_group.monitoring_asg"
-  ]
-}
-
-resource "aws_ecs_service" "monitoring_node_exporter_ecs_service" {
-  name = "${format("%s_monitoring_node_exporter_service_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-
-  cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.monitoring_node_exporter_ecs_task.arn}"
-  desired_count = "${var.service_desired_count}"
-
-  iam_role = "${aws_iam_role.monitoring_role.arn}"
-
-  load_balancer {
-    elb_name = "${aws_elb.monitoring_internal_elb.name}"
-    container_name = "nodeexporter"
-    container_port = 9100
-  }
-
-  depends_on = [
-    "aws_autoscaling_group.monitoring_asg"
-  ]
 }
 
 resource "aws_ecs_service" "monitoring_prometheus_ecs_service" {
@@ -952,6 +860,19 @@ resource "aws_ecs_service" "monitoring_grafana_ecs_service" {
   depends_on = [
     "aws_autoscaling_group.monitoring_asg"
   ]
+}
+
+# Monitoring
+
+module "monitoring_agents" {
+  source = "../monitoring-agents"
+
+  vpc_shortname = "${var.vpc_shortname}"
+  ecs_cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
+  placement_constraints = "distinctInstance"
+  service_desired_count = "1"
+
+  tag_environment = "${var.tag_environment}"
 }
 
 # Discovery

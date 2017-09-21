@@ -72,7 +72,7 @@ resource "aws_ecs_task_definition" "discovery_consul_registrator_ecs_task" {
   network_mode = "host"
 
   volume {
-    host_path = "/opt/consul-registrator/bin"
+    host_path = "/mnt/efs/consul/consul-registrator/bin"
     name = "consul_registrator_bin"
   }
 

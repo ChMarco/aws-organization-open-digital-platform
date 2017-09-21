@@ -20,7 +20,7 @@
       },
       {
         "containerPath": "/consul/data",
-        "sourceVolume": "efs-discovery",
+        "sourceVolume": "consul_data",
         "readOnly": false
       }
     ],
@@ -30,6 +30,7 @@
       "-raft-protocol=3",
       "-bootstrap-expect=${bootstrap_expect}",
       "-ui",
+      "-log-level=info",
       "-dc=${consul_dc}",
       "-retry-join-ec2-tag-key=aws:autoscaling:groupName",
       "-retry-join-ec2-tag-value=${join}"
