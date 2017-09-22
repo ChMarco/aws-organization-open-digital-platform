@@ -1,3 +1,5 @@
+variable "enable_debug" { default = "true" }
+
 variable "lc_associate_public_ip_address" { default = "false" }
 variable "lc_ami_id" { default = "" }
 variable "lc_instance_type" { default = "t2.micro" }

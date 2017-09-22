@@ -20,9 +20,5 @@ data "null_data_source" "tag_defaults" {
 }
 
 data "aws_availability_zones" "available" {}
-data "aws_vpc_endpoint_service" "s3" {
-  service = "s3"
-}
-data "aws_vpc_endpoint_service" "dynamodb" {
-  service = "dynamodb"
-}
+data "aws_vpc_endpoint_service" "s3" { service = "s3" }
+data "aws_vpc_endpoint_service" "dynamodb" { service = "dynamodb" }

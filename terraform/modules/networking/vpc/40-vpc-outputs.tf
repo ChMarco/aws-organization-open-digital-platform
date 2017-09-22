@@ -1,10 +1,3 @@
-/*
- * Module: VPC
- *
- * Outputs
- *
- */
-
 data "null_data_source" "vpc_outputs" {
   inputs {
     vpc_id = "${aws_vpc.vpc.id}"
@@ -14,8 +7,5 @@ data "null_data_source" "vpc_outputs" {
     vgw_id = "${aws_vpn_gateway.vpn_gw.id}"
     vpc_monitoring_security_group = "${aws_security_group.monitoring_security_group.id}"
     vpc_discovery_security_group = "${aws_security_group.discovery_security_group.id}"
-    vpc_shortname = "${var.vpc_shortname}"
-    vpc_description = "${var.vpc_description}"
-    name_prefix = "${lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")}"
   }
 }

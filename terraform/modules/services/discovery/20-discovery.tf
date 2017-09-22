@@ -592,6 +592,61 @@ data "template_file" "discovery_consul_task_template" {
   }
 }
 
+data "template_file" "discovery_consul_agent_task_template" {
+  template = "${file("${path.module}/templates/discovery_consul_agent.json.tpl")}"
+
+  vars {
+    bootstrap_expect = "${var.service_desired_count}"
+    consul_dc = "${data.aws_caller_identity.current.account_id}-${var.aws_region}"
+    join = "${format("%s_discovery_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+  }
+}
+
+resource "aws_ecs_task_definition" "discovery_consul_agent_ecs_task" {
+  family = "discovery-agent"
+  container_definitions = "${data.template_file.discovery_consul_agent_task_template.rendered}"
+
+  task_role_arn = "${aws_iam_role.discovery_role.arn}"
+
+  network_mode = "host"
+
+  volume {
+    host_path = "/etc/consul.d"
+    name = "consul_config"
+  }
+
+  volume {
+    host_path = "/var/lib/consul"
+    name = "consul_data"
+  }
+}
+
+data "template_file" "discovery_consul_registrator_task_template" {
+  template = "${file("${path.module}/templates/discovery_consul_registrator.json.tpl")}"
+}
+
+resource "aws_ecs_task_definition" "discovery_consul_registrator_ecs_task" {
+  family = "discovery-agent"
+  container_definitions = "${data.template_file.discovery_consul_registrator_task_template.rendered}"
+
+  task_role_arn = "${aws_iam_role.discovery_role.arn}"
+
+  network_mode = "host"
+
+  volume {
+    host_path = "/mnt/efs/consul/consul-registrator/bin"
+    name = "consul_registrator_bin"
+  }
+
+  volume {
+    host_path = "/var/run/docker.sock"
+    name = "docker_socket"
+  }
+}
+
 resource "aws_ecs_task_definition" "discovery_consul_ecs_task" {
   family = "discovery"
   container_definitions = "${data.template_file.discovery_consul_task_template.rendered}"
@@ -600,13 +655,13 @@ resource "aws_ecs_task_definition" "discovery_consul_ecs_task" {
 
   volume {
     name = "consul_config"
-    host_path = "/mnt/efs/consul/config"
+    host_path = "/etc/consul.d"
 
   }
 
   volume {
     name = "consul_data"
-    host_path = "/mnt/efs/consul/data"
+    host_path = "/var/lib/consul"
   }
 }
 
@@ -635,19 +690,6 @@ resource "aws_ecs_service" "discovery_consul_ecs_service" {
   depends_on = [
     "aws_autoscaling_group.discovery_asg"
   ]
-}
-
-# Monitoring
-
-module "monitoring_agents" {
-  source = "../monitoring-agents"
-
-  vpc_shortname = "${var.vpc_shortname}"
-  ecs_cluster = "${aws_ecs_cluster.discovery_ecs_cluster.id}"
-  placement_constraints = "distinctInstance"
-  service_desired_count = "3"
-
-  tag_environment = "${var.tag_environment}"
 }
 
 # Backup

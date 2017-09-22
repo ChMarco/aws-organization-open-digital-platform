@@ -786,6 +786,51 @@ resource "aws_ecs_task_definition" "monitoring_grafana_ecs_task" {
   }
 }
 
+data "template_file" "monitoring_cadvisor_task_template" {
+  template = "${file("${path.module}/templates/monitoring_cadvisor.json.tpl")}"
+}
+
+data "template_file" "monitoring_node_exporter_task_template" {
+  template = "${file("${path.module}/templates/monitoring_node_exporter.json.tpl")}"
+}
+
+resource "aws_ecs_task_definition" "monitoring_cadvisor_ecs_task" {
+  family = "monitoring-agent"
+  container_definitions = "${data.template_file.monitoring_cadvisor_task_template.rendered}"
+
+  volume {
+    name = "root"
+    host_path = "/"
+  }
+
+  volume {
+    name = "var_run"
+    host_path = "/var/run"
+  }
+
+  volume {
+    name = "sys"
+    host_path = "/sys"
+  }
+
+  volume {
+    name = "var_lib_docker"
+    host_path = "/var/lib/docker/"
+  }
+
+  volume {
+    name = "cgroup"
+    host_path = "/cgroup"
+  }
+}
+
+resource "aws_ecs_task_definition" "monitoring_node_exporter_ecs_task" {
+  family = "monitoring-agent"
+  container_definitions = "${data.template_file.monitoring_node_exporter_task_template.rendered}"
+
+  network_mode = "host"
+}
+
 resource "aws_ecs_cluster" "monitoring_ecs_cluster" {
   name = "${format("%s_monitoring_cluster_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
@@ -860,36 +905,6 @@ resource "aws_ecs_service" "monitoring_grafana_ecs_service" {
   depends_on = [
     "aws_autoscaling_group.monitoring_asg"
   ]
-}
-
-# Monitoring
-
-module "monitoring_agents" {
-  source = "../monitoring-agents"
-
-  vpc_shortname = "${var.vpc_shortname}"
-  ecs_cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
-  placement_constraints = "distinctInstance"
-  service_desired_count = "1"
-
-  tag_environment = "${var.tag_environment}"
-}
-
-# Discovery
-
-module "discovery_agents" {
-  source = "../discovery-agents"
-
-  aws_region = "${var.aws_region}"
-
-  vpc_shortname = "${var.vpc_shortname}"
-  task_role = "${aws_iam_role.monitoring_role.arn}"
-  ecs_cluster = "${aws_ecs_cluster.monitoring_ecs_cluster.id}"
-  placement_constraints = "distinctInstance"
-  service_desired_count = "1"
-
-  tag_environment = "${var.tag_environment}"
-
 }
 
 # Backup

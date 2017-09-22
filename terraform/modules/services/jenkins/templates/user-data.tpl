@@ -11,6 +11,7 @@ echo ECS_CLUSTER='${ecs_cluster_name}' > /etc/ecs/ecs.config
 yum-config-manager --enable epel
 yum update -y
 yum -y install nfs-utils
+yum -y install aws-cli
 
 mkdir -p /etc/nginx
 
@@ -110,6 +111,13 @@ routers:
   dtab: |
     /svc => /#/io.l5d.consul/${consul_dc};
 EOF
+
+mkdir -p /mnt/efs/workspace/SeedJob
+mkdir -p /mnt/efs/init.groovy.d
+
+aws s3 cp s3://adidas-terraform/terraform-scripts/jenkins/ /mnt/efs/workspace/SeedJob --recursive
+aws s3 cp s3://adidas-terraform/terraform-scripts/jenkins/seed-job.groovy /mnt/efs/init.groovy.d
+aws s3 cp s3://adidas-terraform/terraform-scripts/jenkins/basic-security.groovy /mnt/efs/init.groovy.d
 
 service docker restart
 start ecs

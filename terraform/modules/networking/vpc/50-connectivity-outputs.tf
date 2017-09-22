@@ -1,10 +1,3 @@
-/*
- * Module: VPC
- *
- * Outputs
- *
- */
-
 data "null_data_source" "connectivity_outputs" {
   inputs {
     igw_id = "${aws_internet_gateway.vpc_igw.id}"

@@ -23,13 +23,15 @@ data "null_data_source" "outputs" {
     discovery_ecs_cluster_id = "${aws_ecs_cluster.discovery_ecs_cluster.id}"
     discovery_consul_ecs_task_arn = "${aws_ecs_task_definition.discovery_consul_ecs_task.arn}"
     discovery_consul_ecs_service_id = "${aws_ecs_service.discovery_consul_ecs_service.id}"
+    discovery_consul_agent_ecs_task_definition_arn = "${aws_ecs_task_definition.discovery_consul_agent_ecs_task.arn}"
+    discovery_consul_registrator_ecs_task_definition_arn = "${aws_ecs_task_definition.discovery_consul_registrator_ecs_task.arn}"
+
   }
 }
 
 output "discovery_outputs" {
   value = "${merge(
         data.null_data_source.outputs.inputs,
-        module.monitoring_agents.monitoring_agents_outputs,
         module.backup_efs.efs_backup_outputs
     )}"
 }
