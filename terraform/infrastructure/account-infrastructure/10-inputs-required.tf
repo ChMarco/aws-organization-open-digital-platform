@@ -1,8 +1,7 @@
 # General
 variable "aws_region" {}
 
-# CloudTrail
-variable "cloudtrail_bucket_name" {}
+variable "account_id" {}
 
 # Jenkins CodeBuild
 variable "jenkins_codebuild_name" {}

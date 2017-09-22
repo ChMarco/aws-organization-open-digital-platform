@@ -11,7 +11,7 @@
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket" "cloudtrail_bucket" {
-  bucket        = "${var.cloudtrail_bucket_name}"
+  bucket        = "cloudtrail-${var.account_id}"
   force_destroy = true
 
   policy = <<POLICY
@@ -25,7 +25,7 @@ resource "aws_s3_bucket" "cloudtrail_bucket" {
               "Service": "cloudtrail.amazonaws.com"
             },
             "Action": "s3:GetBucketAcl",
-            "Resource": "arn:aws:s3:::${var.cloudtrail_bucket_name}"
+            "Resource": "arn:aws:s3:::cloudtrail-${var.account_id}"
         },
         {
             "Sid": "AWSCloudTrailWrite",
@@ -34,7 +34,7 @@ resource "aws_s3_bucket" "cloudtrail_bucket" {
               "Service": "cloudtrail.amazonaws.com"
             },
             "Action": "s3:PutObject",
-            "Resource": "arn:aws:s3:::${var.cloudtrail_bucket_name}/*",
+            "Resource": "arn:aws:s3:::cloudtrail-${var.account_id}/*",
             "Condition": {
                 "StringEquals": {
                     "s3:x-amz-acl": "bucket-owner-full-control"
@@ -48,7 +48,7 @@ POLICY
 
 resource "aws_cloudtrail" "cloudtrail" {
   name = "Default"
-  s3_bucket_name = "${var.cloudtrail_bucket_name}"
+  s3_bucket_name = "cloudtrail-${var.account_id}"
   include_global_service_events = true
   is_multi_region_trail = true
   enable_log_file_validation = true

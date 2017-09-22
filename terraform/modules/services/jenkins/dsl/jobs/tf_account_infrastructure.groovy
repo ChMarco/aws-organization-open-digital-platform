@@ -6,7 +6,7 @@ pipelineJob('infrastructure/tf_account_infrastructure') {
       stringParam('AWS_SECRET_ACCESS_KEY', '', 'AWS secret access key')
       stringParam('STATE_BUCKET', '', 'S3 Bucket for TF State')
       stringParam('STATE_BUCKET_REGION', 'eu-west-1', 'AWS Region')
-      stringParam('BRANCH', 'develop', 'Repo Branch')
+      stringParam('BRANCH', 'terraform', 'Repo Branch')
     }
     definition {
       cps {

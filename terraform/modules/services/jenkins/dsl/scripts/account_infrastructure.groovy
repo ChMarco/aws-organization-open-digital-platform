@@ -27,7 +27,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} init
+              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} init -var=${ACCOUNT_ID}
               ''')
           }
        }
@@ -35,7 +35,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} get
+              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} get -var=${ACCOUNT_ID}
               ''')
           }
        }
@@ -43,7 +43,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} plan
+              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} plan -var=${ACCOUNT_ID}
               ''')
           }
        }
@@ -56,7 +56,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply
+              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply -var=${ACCOUNT_ID}
               ''')
           }
        }

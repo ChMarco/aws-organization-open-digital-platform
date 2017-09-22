@@ -1,12 +1,3 @@
-/*
- * Module: cloudtrail
- *
- * Outputs:
- *   - cloudtrail_id
- *   - cloudtrail_home_region
- *   - cloudtrail_arn
- */
-
 data "null_data_source" "cloudtrail_outputs" {
   inputs {
     cloudtrail_id = "${aws_cloudtrail.cloudtrail.id}"

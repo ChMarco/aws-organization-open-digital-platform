@@ -117,7 +117,6 @@ mkdir -p /mnt/efs/init.groovy.d
 
 aws s3 cp s3://adidas-terraform/terraform-scripts/jenkins/ /mnt/efs/workspace/SeedJob --recursive
 aws s3 cp s3://adidas-terraform/terraform-scripts/jenkins/seed-job.groovy /mnt/efs/init.groovy.d
-aws s3 cp s3://adidas-terraform/terraform-scripts/jenkins/basic-security.groovy /mnt/efs/init.groovy.d
 
 service docker restart
 start ecs
