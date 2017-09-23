@@ -134,6 +134,16 @@ resource "aws_security_group" "jenkins_elb_security_group" {
 
 }
 
+resource "aws_security_group_rule" "jenkins_allow_jenkins_slave" {
+  type = "ingress"
+  from_port = 50000
+  to_port = 50000
+  protocol = "6"
+  source_security_group_id = "${aws_security_group.jenkins_elb_security_group.id}"
+
+  security_group_id = "${aws_security_group.jenkins_security_group.id}"
+}
+
 resource "aws_security_group" "jenkins_proxy_elb_security_group" {
 
   name = "${format("%s_jenkins_proxy_elb_%s",
