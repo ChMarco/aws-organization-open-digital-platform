@@ -48,16 +48,16 @@ module "monitoring_agents_03" {
 
 # Secrets
 
-//module "monitoring_agents_04" {
-//  source = "../../modules/services/agents-monitoring"
-//
-//  vpc_shortname = "${var.vpc_shortname}"
-//  ecs_cluster = "${lookup(module.secrets.secrets_outputs, "secrets_ecs_cluster_id")}"
-//  placement_constraints = "distinctInstance"
-//  service_desired_count = "1"
-//
-//  monitoring_agent_cadvisor_ecs_task = "${lookup(module.monitoring.monitoring_outputs, "monitoring_agent_cadvisor_ecs_task_arn")}"
-//  monitoring_agent_node_exporter_ecs_task = "${lookup(module.monitoring.monitoring_outputs, "monitoring_agent_node_exporter_ecs_task_arn")}"
-//
-//  tag_environment = "${var.tag_environment}"
-//}
+module "monitoring_agents_04" {
+  source = "../../modules/services/agents-monitoring"
+
+  vpc_shortname = "${var.vpc_shortname}"
+  ecs_cluster = "${lookup(module.secrets.secrets_outputs, "secrets_ecs_cluster_id")}"
+  placement_constraints = "distinctInstance"
+  service_desired_count = "1"
+
+  monitoring_agent_cadvisor_ecs_task = "${lookup(module.monitoring.monitoring_outputs, "monitoring_agent_cadvisor_ecs_task_definition_arn")}"
+  monitoring_agent_node_exporter_ecs_task = "${lookup(module.monitoring.monitoring_outputs, "monitoring_agent_node_exporter_ecs_task_definition_arn")}"
+
+  tag_environment = "${var.tag_environment}"
+}

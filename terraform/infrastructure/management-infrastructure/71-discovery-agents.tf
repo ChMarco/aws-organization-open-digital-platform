@@ -35,3 +35,22 @@ module "discovery_agents_02" {
   tag_environment = "${var.tag_environment}"
 
 }
+
+# Secrets
+
+module "discovery_agents_03" {
+  source = "../../modules/services/agents-discovery"
+
+  aws_region = "${var.aws_region}"
+
+  vpc_shortname = "${var.vpc_shortname}"
+  ecs_cluster = "${lookup(module.secrets.secrets_outputs, "secrets_ecs_cluster_id")}"
+  placement_constraints = "distinctInstance"
+  service_desired_count = "1"
+
+  discovery_consul_agent_ecs_task = "${lookup(module.discovery.discovery_outputs, "discovery_consul_agent_ecs_task_definition_arn")}"
+  discovery_consul_registrator_ecs_task = "${lookup(module.discovery.discovery_outputs, "discovery_consul_registrator_ecs_task_definition_arn")}"
+
+  tag_environment = "${var.tag_environment}"
+
+}
