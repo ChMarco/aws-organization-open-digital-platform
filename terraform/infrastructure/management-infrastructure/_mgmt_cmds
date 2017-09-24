@@ -27,7 +27,6 @@ function get {
 function plan {
     source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
     terraform plan \
-        -var-file "${ENVIRONMENT}/config.tfvars" \
         -out "${APPLY_PLAN}" \
         "$@"
 }
@@ -40,7 +39,6 @@ function apply {
 function plan_destroy {
     source ../assume_role.sh ${ACCOUNT_ID} ${PROFILE}
     terraform plan -destroy \
-        -var-file "${ENVIRONMENT}/config.tfvars" \
         -out "${DESTROY_PLAN}" \
         "$@"
 }
