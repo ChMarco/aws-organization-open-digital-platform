@@ -56,7 +56,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} default ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply'
+              ./account.sh ${ACCOUNT_ID} default ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply
               ''')
           }
        }
