@@ -61,22 +61,6 @@ resource "aws_security_group" "jenkins_security_group" {
     self = "true"
   }
 
-  ingress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    self = "true"
-  }
-
-  ingress {
-    from_port = 22
-    protocol = "6"
-    to_port = 22
-    security_groups = [
-      "${var.jenkins_ssh_bastion_access}"
-    ]
-  }
-
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
@@ -132,6 +116,26 @@ resource "aws_security_group" "jenkins_elb_security_group" {
     create_before_destroy = "true"
   }
 
+}
+
+resource "aws_security_group_rule" "jenkins_allow_all_self" {
+  type = "ingress"
+  from_port = 0
+  to_port = 0
+  protocol = "-1"
+  self = true
+
+  security_group_id = "${aws_security_group.jenkins_security_group.id}"
+}
+
+resource "aws_security_group_rule" "jenkins_allow_bastion_ssh" {
+  type = "ingress"
+  from_port = 22
+  to_port = 22
+  protocol = "6"
+  source_security_group_id = "${var.jenkins_ssh_bastion_access}"
+
+  security_group_id = "${aws_security_group.jenkins_security_group.id}"
 }
 
 resource "aws_security_group_rule" "jenkins_allow_jenkins_slave" {
