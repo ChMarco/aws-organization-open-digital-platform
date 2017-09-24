@@ -10,7 +10,6 @@ module "vpc" {
   private_subnet_cidr_blocks = "${var.private_subnet_cidr_blocks}"
   deploy_environment = "${var.deploy_environment}"
 
-  tag_resource_name = "${var.tag_resource_name}"
   tag_project_name = "${var.tag_project_name}"
   tag_environment = "${var.tag_environment}"
   tag_cost_center = "${var.tag_cost_center}"
