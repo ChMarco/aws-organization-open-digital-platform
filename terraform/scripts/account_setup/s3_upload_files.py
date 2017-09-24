@@ -41,7 +41,7 @@ def upload_s3_folders(account_id, local_directory, s3_directory):
                     print('\nPath found on S3! Skipping {}...'.format(s3_path))
                 except botocore.exceptions.ClientError as ex:
                     if ex.response['Error']['Code'] == '404':
-                        print('\nUploading {}...'.format(s3_path))
+                        print('Uploading {}...'.format(s3_path))
                         s3.upload_file(local_path, account_bucket, s3_path)
         print("\nFiles successfully uploaded\n")
     except botocore.exceptions.ClientError as e:
