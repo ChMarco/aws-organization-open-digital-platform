@@ -15,7 +15,6 @@ pipelineJob('infrastructure/tf_standard_infrastructure') {
       stringParam('MANAGEMENT_VPC_ID', '', 'ID of Management VPC')
       stringParam('MANAGEMENT_VPC_CIDR', '', 'Cidr Block of Management VPC')
       stringParam('MANAGEMENT_VPC_SHORTNAME', '', 'Shortname of Management VPC')
-      stringParam('MANAGEMENT_KEYPAIR', '', 'Manager servers key')
       stringParam('DMZ_SUBNET_CIDR', '', 'Cidr Block of DMZ Subnets; seperated by comma.')
       stringParam('PUBLIC_SUBNET_CIDR', '', 'Cidr Block of Public Subnets; seperated by comma.')
       stringParam('PRIVATE_SUBNET_CIDR', '', 'Cidr Block of Private Subnets; seperated by comma.')
