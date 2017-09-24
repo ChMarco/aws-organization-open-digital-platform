@@ -105,7 +105,7 @@ resource "aws_codebuild_project" "codebuild" {
   }
   "source" {
     type = "S3"
-    location = "${var.account_id}-infrastructure/terraform-codebuild/${var.image_name}.zip"
+    location = "${var.account_id}-infrastructure-terraform/terraform-codebuild/${var.image_name}.zip"
   }
 
   tags = "${var.base_aws_tags}"
