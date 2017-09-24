@@ -24,9 +24,9 @@ resource "aws_vpc" "vpc" {
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
-            "Name", format("%s_%s",
+            "Name", format("%s_%s_VPC",
                 lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                element(data.aws_availability_zones.available.names, count.index)
+                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
         )
     )}"
