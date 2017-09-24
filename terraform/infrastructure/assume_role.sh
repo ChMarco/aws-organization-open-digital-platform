@@ -4,8 +4,8 @@
 #   brew install jq
 #
 # Example:
-#   source aws-assume-role
-#   alias aws-assume-role="source aws-assume-role"
+#   source assume_role
+#   alias assume_role="source assume_role"
 #
 # Notes:
 #   Remove .sh file extension and move file to a location available to your $PATH

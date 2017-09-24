@@ -1,7 +1,6 @@
 pipelineJob('infrastructure/tf_standard_infrastructure') {
     parameters {
       stringParam('ACCOUNT_ID', '', 'AWS Account ID')
-      stringParam('ACCOUNT_PROFILE', 'default', 'AWS Account PROFILE')
       stringParam('AWS_ACCESS_KEY', '', 'AWS acces key')
       stringParam('AWS_SECRET_ACCESS_KEY', '', 'AWS secret access key')
       stringParam('ENVIRONMENT', 'test', 'Infrastructure Environment')

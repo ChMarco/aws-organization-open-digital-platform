@@ -14,7 +14,7 @@ node('jenkins-linux-slave') {
         ])
     }
 
-    withEnv(["REGION=${STATE_BUCKET_REGION}"]) {
+    withEnv(["REGION=${STATE_BUCKET_REGION}", "TF_VAR_account_id=${ACCOUNT_ID}"]) {
        stage ('fetch_credentials') {
           ansiColor('xterm') {
               sh ('''
@@ -27,7 +27,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} init -var=${ACCOUNT_ID}
+              ./account.sh ${ACCOUNT_ID} default ${STATE_BUCKET} ${STATE_BUCKET_REGION} init
               ''')
           }
        }
@@ -35,7 +35,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} get -var=${ACCOUNT_ID}
+              ./account.sh ${ACCOUNT_ID} default ${STATE_BUCKET} ${STATE_BUCKET_REGION} get
               ''')
           }
        }
@@ -43,12 +43,12 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} plan -var=${ACCOUNT_ID}
+              ./account.sh ${ACCOUNT_ID} default ${STATE_BUCKET} ${STATE_BUCKET_REGION} plan
               ''')
           }
        }
        stage ('plan-confirmation') {
-          timeout (time: 15, unit: 'MINUTES') {
+          timeout (time: 5, unit: 'MINUTES') {
               input("Is plan doing what you expect?")
           }
        }
@@ -56,7 +56,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply -var=${ACCOUNT_ID}
+              ./account.sh ${ACCOUNT_ID} default ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply'
               ''')
           }
        }
@@ -64,7 +64,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/account-infrastructure
-              ./account.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${STATE_BUCKET} ${STATE_BUCKET_REGION} output
+              ./account.sh ${ACCOUNT_ID} default ${STATE_BUCKET} ${STATE_BUCKET_REGION} output
               ''')
           }
        }

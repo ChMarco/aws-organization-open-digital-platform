@@ -8,7 +8,6 @@ variable "private_subnet_cidr_blocks" {}
 variable "deploy_environment" {}
 
 # Tags
-variable "tag_resource_name" {}
 variable "tag_project_name" {}
 variable "tag_environment" {}
 variable "tag_cost_center" {}

@@ -23,7 +23,7 @@
     ],
     "mountPoints": [
       {
-        "sourceVolume": "efs-jenkins",
+        "sourceVolume": "jenkins_data",
         "containerPath": "/var/jenkins_home"
       }
     ]

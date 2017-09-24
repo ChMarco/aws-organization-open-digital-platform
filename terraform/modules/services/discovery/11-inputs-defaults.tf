@@ -28,3 +28,5 @@ variable "discovery_ami" {
 }
 
 variable "tag_Monitoring" { default = "On" }
+variable "tag_resource_name" { default = "Discovery Server" }
+variable "tag_service" { default = "Discovery" }

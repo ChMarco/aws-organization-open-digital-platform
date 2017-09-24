@@ -26,3 +26,5 @@ variable "bastion_ami" {
 }
 
 variable "tag_monitoring" { default = "On" }
+variable "tag_resource_name" { default = "Bastion Server" }
+variable "tag_service" { default = "Bastion" }

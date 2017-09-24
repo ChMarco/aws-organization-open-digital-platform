@@ -26,3 +26,6 @@ variable "monitoring_ami" {
         "ap-southeast-2" = "ami-697a540a"
     }
 }
+
+variable "tag_resource_name" { default = "Monitoring Server" }
+variable "tag_service" { default = "Monitoring" }

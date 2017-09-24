@@ -108,23 +108,6 @@ resource "aws_security_group" "discovery_consul_alb_security_group" {
     ]
   }
 
-  ingress {
-    from_port = 80
-    protocol = "6"
-    to_port = 80
-    cidr_blocks = [
-      "${compact(
-              split(",",
-                  replace(
-                      join(",", values(var.discovery_web_whitelist)),
-                      "0.0.0.0/0",
-                      ""
-                  )
-              )
-          )}"
-    ]
-  }
-
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
@@ -139,6 +122,32 @@ resource "aws_security_group" "discovery_consul_alb_security_group" {
     create_before_destroy = "true"
   }
 
+}
+
+resource "aws_security_group_rule" "allow_web_access_http" {
+  count = "${length(split(",", var.discovery_web_whitelist))}"
+
+  type = "ingress"
+  from_port = 80
+  to_port = 80
+  protocol = "6"
+  cidr_blocks = [
+    "${element(split(",", var.discovery_web_whitelist), count.index)}"
+  ]
+  security_group_id = "${aws_security_group.discovery_consul_alb_security_group.id}"
+}
+
+resource "aws_security_group_rule" "allow_web_access_https" {
+  count = "${length(split(",", var.discovery_web_whitelist))}"
+
+  type = "ingress"
+  from_port = 443
+  to_port = 443
+  protocol = "6"
+  cidr_blocks = [
+    "${element(split(",", var.discovery_web_whitelist), count.index)}"
+  ]
+  security_group_id = "${aws_security_group.discovery_consul_alb_security_group.id}"
 }
 
 resource "aws_security_group" "discovery_efs_security_group" {
@@ -690,27 +699,4 @@ resource "aws_ecs_service" "discovery_consul_ecs_service" {
   depends_on = [
     "aws_autoscaling_group.discovery_asg"
   ]
-}
-
-# Backup
-
-module "backup_efs" {
-  source = "../backup/efs-backup"
-
-  vpc_shortname = "${var.vpc_shortname}"
-  task_role = "${aws_iam_role.discovery_role.arn}"
-  stack_name = "Discovery"
-
-  efs_name = "${format("%s_Jenkins_efs_backup_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-  ecs_cluster = "${aws_ecs_cluster.discovery_ecs_cluster.id}"
-  efs_id = "${aws_efs_file_system.discovery_efs.id}"
-  aws_region = "${var.aws_region}"
-  backup_bucket = "adidas-terraform"
-
-
-  service_desired_count = "1"
-  tag_environment = "${var.tag_environment}"
 }

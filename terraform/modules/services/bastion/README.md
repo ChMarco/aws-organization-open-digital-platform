@@ -38,7 +38,6 @@ monitoring_security_group
 
 deploy_environment
 
-tag_resource_name
 tag_project_name
 tag_environment
 tag_cost_center

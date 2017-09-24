@@ -165,40 +165,6 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
     ]
   }
 
-  ingress {
-    from_port = 80
-    protocol = "6"
-    to_port = 80
-    cidr_blocks = [
-      "${compact(
-              split(",",
-                  replace(
-                      join(",", values(var.jenkins_web_whitelist)),
-                      "0.0.0.0/0",
-                      ""
-                  )
-              )
-          )}"
-    ]
-  }
-
-  ingress {
-    from_port = 443
-    protocol = "6"
-    to_port = 443
-    cidr_blocks = [
-      "${compact(
-              split(",",
-                  replace(
-                      join(",", values(var.jenkins_web_whitelist)),
-                      "0.0.0.0/0",
-                      ""
-                  )
-              )
-          )}"
-    ]
-  }
-
   tags = "${merge(
         data.null_data_source.tag_defaults.inputs,
         map(
@@ -215,58 +181,30 @@ resource "aws_security_group" "jenkins_proxy_elb_security_group" {
 
 }
 
-resource "aws_security_group" "linkerd_elb_security_group" {
+resource "aws_security_group_rule" "allow_web_access_http" {
+  count = "${length(split(",", var.jenkins_web_whitelist))}"
 
-  name = "${format("%s_linkerd_elb_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-  description = "${format("%s Linkerd elb Security Group",
-        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
-    )}"
+  type = "ingress"
+  from_port = 80
+  to_port = 80
+  protocol = "6"
+  cidr_blocks = [
+    "${element(split(",", var.jenkins_web_whitelist), count.index)}"
+  ]
+  security_group_id = "${aws_security_group.jenkins_proxy_elb_security_group.id}"
+}
 
-  vpc_id = "${var.vpc_id}"
+resource "aws_security_group_rule" "allow_web_access_https" {
+  count = "${length(split(",", var.jenkins_web_whitelist))}"
 
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-
-  ingress {
-    from_port = 9990
-    protocol = "6"
-    to_port = 9990
-    cidr_blocks = [
-      "${compact(
-              split(",",
-                  replace(
-                      join(",", values(var.jenkins_web_whitelist)),
-                      "0.0.0.0/0",
-                      ""
-                  )
-              )
-          )}"
-    ]
-  }
-
-  tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
-        map(
-            "Name", format("%s_linkerd_elb_%s",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-            )
-        )
-    )}"
-
-  lifecycle {
-    create_before_destroy = "true"
-  }
-
+  type = "ingress"
+  from_port = 443
+  to_port = 443
+  protocol = "6"
+  cidr_blocks = [
+    "${element(split(",", var.jenkins_web_whitelist), count.index)}"
+  ]
+  security_group_id = "${aws_security_group.jenkins_proxy_elb_security_group.id}"
 }
 
 resource "aws_security_group" "jenkins_efs_security_group" {
@@ -377,7 +315,7 @@ resource "aws_elb" "jenkins_elb" {
     healthy_threshold = 2
     unhealthy_threshold = 5
     timeout = 5
-    target = "HTTP:8080/"
+    target = "TCP:8080"
     interval = "30"
   }
 
@@ -424,7 +362,7 @@ resource "aws_elb" "jenkins_proxy_elb" {
     healthy_threshold = 2
     unhealthy_threshold = 5
     timeout = 5
-    target = "HTTP:80/"
+    target = "TCP:80"
     interval = "30"
   }
 
@@ -432,53 +370,6 @@ resource "aws_elb" "jenkins_proxy_elb" {
         data.null_data_source.tag_defaults.inputs,
         map(
             "Name", format("%s-jenkins-proxy-%s",
-                  lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                  lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-            )
-        )
-    )}"
-}
-
-resource "aws_elb" "linkerd_elb" {
-
-  name = "${format("%s-linkerd-%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-
-  subnets = [
-    "${split(",", var.jenkins_elb_subnets)}"
-  ]
-
-  security_groups = [
-    "${aws_security_group.jenkins_security_group.id}",
-    "${aws_security_group.jenkins_proxy_elb_security_group.id}"
-  ]
-
-  cross_zone_load_balancing = true
-  idle_timeout = 60
-  connection_draining = true
-  connection_draining_timeout = 300
-
-  listener {
-    instance_port = "9990"
-    instance_protocol = "tcp"
-    lb_port = "80"
-    lb_protocol = "tcp"
-  }
-
-  health_check {
-    healthy_threshold = 2
-    unhealthy_threshold = 5
-    timeout = 5
-    target = "HTTP:9990/"
-    interval = "30"
-  }
-
-  tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
-        map(
-            "Name", format("%s-linkerd-%s",
                   lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
                   lookup(data.null_data_source.tag_defaults.inputs, "Environment")
             )
@@ -642,6 +533,7 @@ data "template_file" "user_data" {
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")
     )}"
+    account_id = "${var.account_id}"
     aws_region = "${var.aws_region}"
   }
 }
@@ -790,8 +682,8 @@ resource "aws_ecs_task_definition" "jenkins_ecs_task" {
   container_definitions = "${data.template_file.jenkins_task_template.rendered}"
 
   volume {
-    name = "efs-jenkins"
-    host_path = "/mnt/efs"
+    name = "jenkins_data"
+    host_path = "/mnt/efs/jenkins"
   }
 }
 
@@ -851,68 +743,4 @@ resource "aws_ecs_service" "jenkins_proxy_ecs_service" {
     "aws_elb.jenkins_proxy_elb",
     "aws_autoscaling_group.jenkins_asg"
   ]
-}
-
-# Backup
-
-module "backup_efs" {
-  source = "../backup/efs-backup"
-
-  vpc_shortname = "${var.vpc_shortname}"
-  task_role = "${aws_iam_role.jenkins_role.arn}"
-  stack_name = "Jenkins"
-
-  efs_name = "${format("%s_Jenkins_efs_backup_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-  ecs_cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
-  efs_id = "${aws_efs_file_system.jenkins_efs.id}"
-  aws_region = "${var.aws_region}"
-  backup_bucket = "adidas-terraform"
-
-
-  service_desired_count = "1"
-  tag_environment = "${var.tag_environment}"
-}
-
-## Linkerd
-
-data "template_file" "discovery_linkerd_task_template" {
-  template = "${file("${path.module}/templates/discovery_linkerd.json.tpl")}"
-}
-
-resource "aws_ecs_task_definition" "discovery_linkerd_ecs_task" {
-  family = "discovery"
-  container_definitions = "${data.template_file.discovery_linkerd_task_template.rendered}"
-
-  task_role_arn = "${aws_iam_role.jenkins_role.arn}"
-
-  volume {
-    host_path = "/etc/linkerd"
-    name = "linkerd_config"
-  }
-}
-
-resource "aws_ecs_service" "discovery_linkerd_ecs_service" {
-  name = "${format("%s_discovery_linkerd_service_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-
-  cluster = "${aws_ecs_cluster.jenkins_ecs_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.discovery_linkerd_ecs_task.arn}"
-  desired_count = "${var.service_desired_count}"
-
-  iam_role = "${aws_iam_role.jenkins_role.arn}"
-
-  load_balancer {
-    elb_name = "${aws_elb.linkerd_elb.name}"
-    container_name = "linkerd"
-    container_port = 9990
-  }
-
-  placement_constraints {
-    type = "distinctInstance"
-  }
 }

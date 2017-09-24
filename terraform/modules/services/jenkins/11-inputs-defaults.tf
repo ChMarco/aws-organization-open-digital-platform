@@ -26,3 +26,5 @@ variable "jenkins_ami" {
 }
 
 variable "tag_Monitoring" { default = "On" }
+variable "tag_resource_name" { default = "Jenkins Server" }
+variable "tag_service" { default = "Jenkins" }

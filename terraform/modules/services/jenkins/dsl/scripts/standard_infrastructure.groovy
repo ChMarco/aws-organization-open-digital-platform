@@ -27,7 +27,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} init
+              ./stack.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} init
               ''')
           }
        }
@@ -35,7 +35,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} get
+              ./stack.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} get
               ''')
           }
        }
@@ -43,12 +43,12 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} plan
+              ./stack.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} plan
               ''')
           }
        }
        stage ('plan-confirmation') {
-          timeout (time: 15, unit: 'MINUTES') {
+          timeout (time: 5, unit: 'MINUTES') {
               input("Is plan doing what you expect?")
           }
        }
@@ -56,7 +56,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} apply
+              ./stack.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} apply
               ''')
           }
        }
@@ -64,7 +64,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/standard-infrastructure
-              ./stack.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} output
+              ./stack.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} ${STACK} output
               ''')
           }
        }

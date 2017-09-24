@@ -27,7 +27,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} init
+              ./mgmt.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} init
               ''')
           }
        }
@@ -35,7 +35,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} get
+              ./mgmt.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} get
               ''')
           }
        }
@@ -43,12 +43,12 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} plan
+              ./mgmt.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} plan
               ''')
           }
        }
        stage ('plan-confirmation') {
-          timeout (time: 15, unit: 'MINUTES') {
+          timeout (time: 5, unit: 'MINUTES') {
               input("Is plan doing what you expect?")
           }
        }
@@ -56,7 +56,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply
+              ./mgmt.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} apply
               ''')
           }
        }
@@ -64,7 +64,7 @@ node('jenkins-linux-slave') {
           ansiColor('xterm') {
               sh ('''
               cd infrastructure/terraform/infrastructure/management-infrastructure
-              ./mgmt.sh ${ACCOUNT_ID} ${ACCOUNT_PROFILE} ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} output
+              ./mgmt.sh ${ACCOUNT_ID} default ${ENVIRONMENT} ${STATE_BUCKET} ${STATE_BUCKET_REGION} output
               ''')
           }
        }
