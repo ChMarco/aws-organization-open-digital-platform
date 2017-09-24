@@ -1,9 +1,3 @@
-resource "null_resource" "grafana_test" {
-  provisioner "local-exec" {
-    command = "until $(curl --output /dev/null --silent --head --fail http://${aws_elb.monitoring_grafana_elb.dns_name}:3000/); do printf '.' sleep 5; done"
-  }
-}
-
 provider "grafana" {
   url = "http://${aws_elb.monitoring_grafana_elb.dns_name}:3000"
   auth = "admin:changeme"
