@@ -3,7 +3,7 @@ pipelineJob('infrastructure/tf_management_infrastructure') {
       stringParam('ACCOUNT_ID', '', 'AWS Account ID')
       stringParam('AWS_ACCESS_KEY', '', 'AWS acces key')
       stringParam('AWS_SECRET_ACCESS_KEY', '', 'AWS secret access key')
-      stringParam('ENVIRONMENT', 'test', 'Infrastructure Environment')
+      stringParam('ENVIRONMENT', 'Test', 'Infrastructure Environment')
       stringParam('REGION', 'eu-west-1', 'AWS Region to deploy to')
       stringParam('STATE_BUCKET', '', 'S3 Bucket for TF State')
       stringParam('STATE_BUCKET_REGION', 'eu-west-1', 'AWS Region of State Bucket')
