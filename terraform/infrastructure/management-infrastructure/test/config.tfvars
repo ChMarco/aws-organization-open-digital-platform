@@ -16,11 +16,9 @@ jenkins_image_tag = "c0b5b9a9-43de-4ed3-9904-d184d05a7ca0"
 
 ## Tags
 
-tag_resource_name = "General"
 tag_project_name = "AODP"
 tag_environment = "Test"
 tag_cost_center = "iCode-I44534"
-tag_tier = "General"
 tag_app_operations_owner = "March Chiapusso"
 tag_system_owner = "March Chiapusso"
 tag_budget_owner = "March Chiapusso"
