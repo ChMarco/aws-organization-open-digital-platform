@@ -44,7 +44,7 @@ module "discovery_agents_03" {
   aws_region = "${var.aws_region}"
 
   vpc_shortname = "${var.vpc_shortname}"
-  ecs_cluster = "${lookup(module.secrets.secrets_outputs, "secrets_ecs_cluster_id")}"
+  ecs_cluster = "${lookup(module.secrets.vault_outputs, "vault_ecs_cluster_id")}"
   placement_constraints = "distinctInstance"
   service_desired_count = "1"
 

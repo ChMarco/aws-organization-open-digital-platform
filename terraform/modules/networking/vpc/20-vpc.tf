@@ -161,6 +161,46 @@ resource "aws_security_group" "discovery_security_group" {
     )}"
 }
 
+# Secrets
+
+resource "aws_security_group" "secrets_security_group" {
+
+  name = "${format("%s_secrets_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+    )}"
+  description = "${format("%s Discovery Security Group - Default",
+        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
+    )}"
+  vpc_id = "${aws_vpc.vpc.id}"
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+  }
+
+  ingress {
+    from_port = 8200
+    to_port = 8200
+    protocol = "6"
+    self = true
+  }
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s_secrets_%s",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+            )
+        )
+    )}"
+}
+
 #--------------------------------------------------------------
 # Connectivity
 #--------------------------------------------------------------

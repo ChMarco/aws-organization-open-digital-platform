@@ -594,7 +594,8 @@ resource "aws_launch_configuration" "monitoring_launch_configuration" {
   security_groups = [
     "${aws_security_group.monitoring_security_group.id}",
     "${var.monitoring_security_group}",
-    "${var.discovery_security_group}",
+    "${var.secrets_security_group}",
+    "${var.discovery_security_group}"
   ]
 
   iam_instance_profile = "${coalesce(

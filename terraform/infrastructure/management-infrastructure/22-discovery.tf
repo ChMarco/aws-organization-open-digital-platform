@@ -12,6 +12,7 @@ module "discovery" {
 
   monitoring_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_monitoring_security_group")}"
   discovery_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_discovery_security_group")}"
+  secrets_security_group = "${lookup(module.vpc.vpc_outputs, "vpc_secrets_security_group")}"
   deploy_environment = "${var.deploy_environment}"
 
   tag_project_name = "${var.tag_project_name}"

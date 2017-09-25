@@ -478,6 +478,7 @@ resource "aws_launch_configuration" "discovery_launch_configuration" {
   security_groups = [
     "${aws_security_group.discovery_security_group.id}",
     "${var.discovery_security_group}",
+    "${var.secrets_security_group}",
     "${var.monitoring_security_group}"
   ]
 

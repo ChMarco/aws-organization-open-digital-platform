@@ -52,7 +52,7 @@ module "monitoring_agents_04" {
   source = "../../modules/services/agents-monitoring"
 
   vpc_shortname = "${var.vpc_shortname}"
-  ecs_cluster = "${lookup(module.secrets.secrets_outputs, "secrets_ecs_cluster_id")}"
+  ecs_cluster = "${lookup(module.secrets.vault_outputs, "vault_ecs_cluster_id")}"
   placement_constraints = "distinctInstance"
   service_desired_count = "1"
 

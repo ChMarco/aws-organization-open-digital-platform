@@ -7,5 +7,6 @@ data "null_data_source" "vpc_outputs" {
     vgw_id = "${aws_vpn_gateway.vpn_gw.id}"
     vpc_monitoring_security_group = "${aws_security_group.monitoring_security_group.id}"
     vpc_discovery_security_group = "${aws_security_group.discovery_security_group.id}"
+    vpc_secrets_security_group = "${aws_security_group.secrets_security_group.id}"
   }
 }

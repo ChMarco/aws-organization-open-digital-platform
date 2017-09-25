@@ -11,6 +11,7 @@ variable "discovery_web_whitelist" {}
 
 variable "monitoring_security_group" {}
 variable "discovery_security_group" {}
+variable "secrets_security_group" {}
 variable "deploy_environment" {}
 
 # Tags

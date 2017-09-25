@@ -1,15 +1,13 @@
 variable "aws_region" {}
-variable "account_id" {}
 
 variable "vpc_id" {}
 variable "vpc_shortname" {}
 
-variable "jenkins_public_key" {}
-variable "jenkins_image_tag" {}
-variable "jenkins_subnets" {}
-variable "jenkins_elb_subnets" {}
-variable "jenkins_ssh_bastion_access" {}
-variable "jenkins_web_whitelist" {}
+variable "vault_public_key" {}
+variable "vault_subnets" {}
+variable "vault_elb_subnets" {}
+variable "vault_ssh_bastion_access" {}
+variable "vault_web_whitelist" {}
 
 variable "monitoring_security_group" {}
 variable "discovery_security_group" {}

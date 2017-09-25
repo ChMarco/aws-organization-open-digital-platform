@@ -195,6 +195,7 @@ resource "aws_launch_configuration" "bastion_launch_configuration" {
   key_name = "${aws_key_pair.bastion_key_pair.key_name}"
   security_groups = [
     "${aws_security_group.bastion_security_group.id}",
+    "${var.secrets_security_group}",
     "${var.monitoring_security_group}"
   ]
 

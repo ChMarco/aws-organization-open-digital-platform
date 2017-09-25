@@ -559,6 +559,7 @@ resource "aws_launch_configuration" "jenkins_launch_configuration" {
   security_groups = [
     "${aws_security_group.jenkins_security_group.id}",
     "${var.monitoring_security_group}",
+    "${var.secrets_security_group}",
     "${var.discovery_security_group}"
   ]
 
