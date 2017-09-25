@@ -5,6 +5,7 @@ variable "deploy_environment" {}
 variable "management_keypair" {}
 variable "ssh_web_whitelist" {}
 variable "jenkins_image_tag" {}
+variable "vault_image_tag" {}
 
 # VPC
 variable "vpc_description" {}

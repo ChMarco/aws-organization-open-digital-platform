@@ -440,12 +440,20 @@ resource "aws_ecs_cluster" "vault_ecs_cluster" {
 
 data "template_file" "vault_task_template" {
   template = "${file("${path.module}/templates/secrets_vault_server.json.tpl")}"
+
+  vars {
+    vault_image_tag = "${var.vault_image_tag}"
+  }
 }
 
 resource "aws_ecs_task_definition" "vault_ecs_task" {
   family = "secrets"
   container_definitions = "${data.template_file.vault_task_template.rendered}"
 
+  volume {
+    name = "vault_config"
+    host_path = "/mnt/efs/vault/config"
+  }
   volume {
     name = "vault_policies"
     host_path = "/mnt/efs/vault/policies"

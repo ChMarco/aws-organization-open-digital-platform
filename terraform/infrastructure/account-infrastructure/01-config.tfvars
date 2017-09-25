@@ -7,3 +7,7 @@ jenkins_image_name = "jenkins"
 jenkins_slave_codebuild_name = "Jenkins-Slave"
 jenkins_slave_codebuild_repo = "jenkins-slave"
 jenkins_slave_image_name = "jenkins-slave"
+
+vault_codebuild_name = "Vault"
+vault_codebuild_repo = "vault"
+vault_image_name = "vault"

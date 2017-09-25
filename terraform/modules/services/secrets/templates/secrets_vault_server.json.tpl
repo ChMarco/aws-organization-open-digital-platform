@@ -1,7 +1,7 @@
 [
   {
     "name": "vault-server",
-    "image": "vault",
+    "image": "633665859024.dkr.ecr.eu-west-1.amazonaws.com/vault:${vault_image_tag}",
     "memory": 128,
     "cpu": 64,
     "essential": true,
@@ -14,15 +14,15 @@
     ],
     "environment": [
       {
-        "name": "VAULT_LOCAL_CONFIG",
-        "value": "{\"listener\":{ \"tcp\":{ \"address\": \"0.0.0.0:8200\", \"tls_disable\": \"1\" }}, \"backend\": {\"consul\": {\"path\": \"vault/\", \"address\": \"127.0.0.1:8500\", \"scheme\": \"http\", \"token\": \"04AEB3B2-45BD-4FCE-9137-ED54BD44023B\", \"advertise_addr\": \"http://127.0.0.1:8200\"}}, \"default_lease_ttl\": \"168h\",\"max_lease_ttl\": \"720h\", \"disable_mlock\": true}"
-      },
-      {
         "name": "VAULT_ADDR",
         "value": "http://127.0.0.1:8200"
       }
     ],
     "mountPoints": [
+      {
+        "containerPath": "/vault/config",
+        "sourceVolume": "vault_config"
+      },
       {
         "containerPath": "/policies",
         "sourceVolume": "vault_policies"

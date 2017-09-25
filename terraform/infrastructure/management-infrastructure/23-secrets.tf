@@ -5,6 +5,7 @@ module "secrets" {
   vpc_id = "${lookup(module.vpc.vpc_outputs, "vpc_id")}"
   vpc_shortname = "${var.vpc_shortname}"
   vault_public_key = "${var.management_keypair}"
+  vault_image_tag = "${var.vault_image_tag}"
   vault_subnets = "${lookup(module.vpc.vpc_outputs, "public_subnet_ids")}"
   vault_elb_subnets = "${lookup(module.vpc.vpc_outputs, "dmz_subnet_ids")}"
   vault_ssh_bastion_access = "${lookup(module.bastion.bastion_outputs, "bastion_security_group_id")}"

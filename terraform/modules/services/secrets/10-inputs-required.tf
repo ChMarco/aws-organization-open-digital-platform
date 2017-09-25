@@ -4,6 +4,7 @@ variable "vpc_id" {}
 variable "vpc_shortname" {}
 
 variable "vault_public_key" {}
+variable "vault_image_tag" {}
 variable "vault_subnets" {}
 variable "vault_elb_subnets" {}
 variable "vault_ssh_bastion_access" {}
