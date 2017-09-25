@@ -446,8 +446,6 @@ resource "aws_ecs_task_definition" "vault_ecs_task" {
   family = "secrets"
   container_definitions = "${data.template_file.vault_task_template.rendered}"
 
-  network_mode = "host"
-
   volume {
     name = "vault_policies"
     host_path = "/mnt/efs/vault/policies"

@@ -23,6 +23,12 @@ resource "aws_ecs_service" "discovery_consul_agent_ecs_service" {
   placement_constraints {
     type = "${var.placement_constraints}"
   }
+
+  lifecycle {
+    ignore_changes = [
+      "cluster"
+    ]
+  }
 }
 
 ## Registrator
@@ -39,5 +45,11 @@ resource "aws_ecs_service" "discovery_consul_registrator_ecs_service" {
 
   placement_constraints {
     type = "${var.placement_constraints}"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      "cluster"
+    ]
   }
 }

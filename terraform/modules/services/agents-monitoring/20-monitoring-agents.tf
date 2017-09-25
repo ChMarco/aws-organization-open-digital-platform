@@ -19,6 +19,12 @@ resource "aws_ecs_service" "monitoring_cadvisor_ecs_service" {
   placement_constraints {
     type = "${var.placement_constraints}"
   }
+
+  lifecycle {
+    ignore_changes = [
+      "cluster"
+    ]
+  }
 }
 
 resource "aws_ecs_service" "monitoring_node_exporter_ecs_service" {
@@ -33,5 +39,11 @@ resource "aws_ecs_service" "monitoring_node_exporter_ecs_service" {
 
   placement_constraints {
     type = "${var.placement_constraints}"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      "cluster"
+    ]
   }
 }
