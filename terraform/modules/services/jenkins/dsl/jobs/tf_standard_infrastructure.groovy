@@ -28,7 +28,7 @@ pipelineJob('infrastructure/tf_standard_infrastructure') {
     }
     definition {
       cps {
-          script(readFileFromWorkspace('terraform/modules/services/jenkins/scripts/standard_infrastructure.groovy'))
+          script(readFileFromWorkspace('terraform/modules/services/jenkins/dsl/scripts/standard_infrastructure.groovy'))
       }
     }
 }
