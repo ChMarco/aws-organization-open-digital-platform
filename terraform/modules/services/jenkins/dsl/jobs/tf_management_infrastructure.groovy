@@ -16,6 +16,7 @@ pipelineJob('infrastructure/tf_management_infrastructure') {
       stringParam('PRIVATE_SUBNET_CIDR', '', 'Cidr Block of Private Subnets; seperated by comma.')
       stringParam('JENKINS_IMAGE_TAG', '', 'Jenkins Docker Image Tag')
       stringParam('VAULT_IMAGE_TAG', '', 'Vault Docker Image Tag')
+      stringParam('CONSUL_ACL_TOKEN', '', 'Master ACL token for Consul')
       stringParam('MANAGEMENT_KEYPAIR', '', 'Manager servers key')
       stringParam('SSH_WEB_WHITELIST', '', 'IPs allowed SSH and Web access')
       stringParam('TAG_PROJECT_NAME', '', 'Project Name')

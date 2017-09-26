@@ -452,7 +452,7 @@ data "template_file" "user_data" {
   vars {
     efs_id = "${aws_efs_file_system.discovery_efs.id}"
     consul_dc = "${data.aws_caller_identity.current.account_id}-${var.aws_region}"
-    consul_acl_master_token_uuid = "04AEB3B2-45BD-4FCE-9137-ED54BD44023B"
+    consul_acl_master_token_uuid = "${var.consul_acl_master_token_uuid}"
     ecs_cluster_name = "${format("%s_discovery_cluster_%s",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
         lookup(data.null_data_source.tag_defaults.inputs, "Environment")

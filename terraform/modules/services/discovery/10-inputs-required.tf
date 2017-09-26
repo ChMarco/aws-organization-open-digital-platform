@@ -8,6 +8,7 @@ variable "discovery_subnets" {}
 variable "discovery_elb_subnets" {}
 variable "discovery_ssh_bastion_access" {}
 variable "discovery_web_whitelist" {}
+variable "consul_acl_master_token_uuid" {}
 
 variable "monitoring_security_group" {}
 variable "discovery_security_group" {}
