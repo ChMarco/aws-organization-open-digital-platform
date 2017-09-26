@@ -9,7 +9,7 @@ pipelineJob('infrastructure/tf_account_infrastructure') {
     }
     definition {
       cps {
-          script(readFileFromWorkspace('scripts/account_infrastructure.groovy'))
+          script(readFileFromWorkspace('terraform/modules/services/jenkins/scripts/account_infrastructure.groovy'))
       }
     }
 }
