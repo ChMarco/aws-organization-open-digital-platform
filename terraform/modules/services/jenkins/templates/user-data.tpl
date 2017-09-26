@@ -57,15 +57,13 @@ EOF
 
 chmod a+x $consul_registrator
 
-sudo chown 1000 /mnt/efs/jenkins
-
-mkdir -p /mnt/efs/jenkins/workspace/SeedJob
 mkdir -p /mnt/efs/jenkins/init.groovy.d
 
 aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/config/ /mnt/efs/jenkins/ --recursive
-aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/ /mnt/efs/jenkins/workspace/SeedJob --recursive
 aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/seed-job.groovy /mnt/efs/jenkins/init.groovy.d
 aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/secure.groovy /mnt/efs/jenkins/init.groovy.d
+
+sudo chown 1000 /mnt/efs/jenkins/*
 
 service docker restart
 start ecs

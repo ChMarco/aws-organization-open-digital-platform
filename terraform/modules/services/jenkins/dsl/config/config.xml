@@ -22,25 +22,25 @@
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
   <clouds>
     <com.cloudbees.jenkins.plugins.amazonecs.ECSCloud plugin="amazon-ecs@1.11">
-      <name>633665859024_Jenkins_Slave</name>
+      <name>Jenkins_Slave</name>
       <templates>
         <com.cloudbees.jenkins.plugins.amazonecs.ECSTaskTemplate>
-          <templateName>633665859024_Jenkins_Slave</templateName>
+          <templateName>Jenkins_Slave</templateName>
           <label>jenkins-linux-slave</label>
-          <image>633665859024.dkr.ecr.eu-west-1.amazonaws.com/jenkins-slave:5af45b42-ca5c-4dd5-9a42-3869345180f7</image>
+          <image>account_id.dkr.ecr.eu-west-1.amazonaws.com/jenkins-slave:jenkins_slave_image_tag</image>
           <remoteFSRoot>/home/jenkins</remoteFSRoot>
           <memory>1000</memory>
           <memoryReservation>500</memoryReservation>
           <cpu>500</cpu>
-          <taskrole>arn:aws:iam::633665859024:role/Management_eu-west-1_jenkins_Test</taskrole>
+          <taskrole>arn:aws:iam::account_id:role/jenkins_role</taskrole>
           <privileged>true</privileged>
         </com.cloudbees.jenkins.plugins.amazonecs.ECSTaskTemplate>
       </templates>
       <credentialsId>AWS Access</credentialsId>
-      <cluster>arn:aws:ecs:eu-west-1:633665859024:cluster/Management_jenkins_cluster_Test</cluster>
+      <cluster>jenkins_ecs_cluster</cluster>
       <regionName>eu-west-1</regionName>
-      <tunnel>internal-Management-jenkins-Test-1825575826.eu-west-1.elb.amazonaws.com:50000</tunnel>
-      <jenkinsUrl>http://internal-Management-jenkins-Test-1825575826.eu-west-1.elb.amazonaws.com</jenkinsUrl>
+      <tunnel>jenkins_internal_dns_name:50000</tunnel>
+      <jenkinsUrl>http://jenkins_internal_dns_name</jenkinsUrl>
       <slaveTimoutInSeconds>300</slaveTimoutInSeconds>
       <ecsService>
         <credentialsId>AWS Access</credentialsId>
