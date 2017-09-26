@@ -217,8 +217,8 @@ resource "aws_security_group_rule" "allow_web_access" {
   count = "${length(split(",", var.monitoring_web_whitelist))}"
 
   type = "ingress"
-  from_port = 3000
-  to_port = 3000
+  from_port = 80
+  to_port = 80
   protocol = "6"
   cidr_blocks = [
     "${element(split(",", var.monitoring_web_whitelist), count.index)}"
@@ -317,7 +317,7 @@ resource "aws_elb" "monitoring_grafana_elb" {
   listener {
     instance_port = "3000"
     instance_protocol = "tcp"
-    lb_port = "3000"
+    lb_port = "80"
     lb_protocol = "tcp"
   }
 
