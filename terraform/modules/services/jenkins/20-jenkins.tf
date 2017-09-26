@@ -319,7 +319,7 @@ resource "aws_elb" "jenkins_elb" {
     healthy_threshold = 2
     unhealthy_threshold = 5
     timeout = 5
-    target = "TCP:8080"
+    target = "HTTP:8080/login"
     interval = "30"
   }
 
@@ -366,7 +366,7 @@ resource "aws_elb" "jenkins_proxy_elb" {
     healthy_threshold = 2
     unhealthy_threshold = 5
     timeout = 5
-    target = "TCP:80"
+    target = "HTTP:80/login"
     interval = "30"
   }
 
