@@ -44,11 +44,16 @@ echo $${aws_az}.${efs_id}.efs.$${aws_region}.amazonaws.com:/    /mnt/efs   nfs4 
 mount -a
 chmod -R 777 /mnt/efs
 
-usermod -a -G docker ec2-user
+mkdir -p /mnt/efs/jenkins/init.groovy.d
 
-#
-# Generate consul-registrator startup file
-#
+aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/config/ /mnt/efs/jenkins/ --recursive
+aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/seed-job.groovy /mnt/efs/jenkins/init.groovy.d
+aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/secure.groovy /mnt/efs/jenkins/init.groovy.d
+
+sudo chown 1000:1000 /mnt/efs/jenkins
+sudo chown 1000:1000 /mnt/efs/jenkins/*
+
+usermod -a -G docker ec2-user
 
 tee $consul_registrator > /dev/null <<EOF
 #!/bin/sh
@@ -56,14 +61,6 @@ exec /bin/registrator -ip $${EC2_INSTANCE_IP_ADDRESS} -retry-attempts -1 consul:
 EOF
 
 chmod a+x $consul_registrator
-
-mkdir -p /mnt/efs/jenkins/init.groovy.d
-
-aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/config/ /mnt/efs/jenkins/ --recursive
-aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/seed-job.groovy /mnt/efs/jenkins/init.groovy.d
-aws s3 cp s3://${account_id}-infrastructure-terraform/terraform-scripts/jenkins/secure.groovy /mnt/efs/jenkins/init.groovy.d
-
-sudo chown 1000 /mnt/efs/jenkins/*
 
 service docker restart
 start ecs
