@@ -18,6 +18,6 @@ output "discovery_outputs" {
   value = "${module.discovery.discovery_outputs}"
 }
 
-//output "secrets_outputs" {
-//  value = "${module.secrets.secrets_outputs}"
-//}
+output "secrets_outputs" {
+  value = "${module.secrets.vault_outputs}"
+}
