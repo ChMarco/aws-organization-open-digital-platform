@@ -92,8 +92,8 @@ def configXml = """\
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.65">
-      <targets>terraform/modules/services/jenkins/dsl/jobs/*.groovy
-terraform/modules/services/jenkins/dsl/views/*.groovy</targets>
+      <targets>terraform/modules/services/jenkins/dsl/views/*.groovy
+terraform/modules/services/jenkins/dsl/jobs/*.groovy</targets>
       <usingScriptText>false</usingScriptText>
       <sandbox>false</sandbox>
       <ignoreExisting>false</ignoreExisting>
