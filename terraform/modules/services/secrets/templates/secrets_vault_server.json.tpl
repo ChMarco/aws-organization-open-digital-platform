@@ -5,6 +5,7 @@
     "memory": 128,
     "cpu": 64,
     "essential": true,
+    "privileged": true,
     "portMappings": [
       {
         "hostPort": 8200,
