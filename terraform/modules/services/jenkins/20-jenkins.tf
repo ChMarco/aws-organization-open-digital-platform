@@ -668,6 +668,7 @@ data "template_file" "jenkins_task_template" {
 
   vars {
     jenkins_image_tag = "${var.jenkins_image_tag}"
+    account_id = "${data.aws_caller_identity.current.account_id}"
   }
 }
 

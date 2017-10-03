@@ -1,7 +1,7 @@
 [
   {
     "name": "jenkins",
-    "image": "633665859024.dkr.ecr.eu-west-1.amazonaws.com/jenkins:${jenkins_image_tag}",
+    "image": "${account_id}.dkr.ecr.eu-west-1.amazonaws.com/jenkins:${jenkins_image_tag}",
     "cpu": 512,
     "memory": 1024,
     "essential": true,

@@ -443,6 +443,7 @@ data "template_file" "vault_task_template" {
 
   vars {
     vault_image_tag = "${var.vault_image_tag}"
+    account_id = "${data.aws_caller_identity.current.account_id}"
   }
 }
 

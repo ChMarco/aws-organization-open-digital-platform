@@ -1,7 +1,7 @@
 [
   {
     "name": "vault-server",
-    "image": "633665859024.dkr.ecr.eu-west-1.amazonaws.com/vault:${vault_image_tag}",
+    "image": "${account_id}.dkr.ecr.eu-west-1.amazonaws.com/vault:${vault_image_tag}",
     "memory": 128,
     "cpu": 64,
     "essential": true,
