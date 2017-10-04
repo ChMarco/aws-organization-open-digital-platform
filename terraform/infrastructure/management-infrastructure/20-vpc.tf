@@ -18,19 +18,3 @@ module "vpc" {
   tag_budget_owner = "${var.tag_budget_owner}"
 
 }
-
-module "route53_private_zone" {
-  source = "../../modules/networking/route53/private_zone"
-
-  name = "${var.private_zone_name}"
-  comment = "${var.private_zone_comment}"
-  vpc_id = "${lookup(module.vpc.vpc_outputs, "vpc_id")}"
-
-  tag_project_name = "${var.tag_project_name}"
-  tag_environment = "${var.tag_environment}"
-  tag_cost_center = "${var.tag_cost_center}"
-  tag_app_operations_owner = "${var.tag_app_operations_owner}"
-  tag_system_owner = "${var.tag_system_owner}"
-  tag_budget_owner = "${var.tag_budget_owner}"
-
-}
