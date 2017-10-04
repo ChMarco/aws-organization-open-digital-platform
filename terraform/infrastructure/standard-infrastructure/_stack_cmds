@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 COMMANDS=$(cat _stack_cmds | grep "^function" | awk '{print $2}' | grep -v "^_" | tr "\n" " " )
-ENVIRONMENTS=$(ls stacks | tr "\n" " ")
 CONFIG_FROM_STACK="stacks"
 APPLY_PLAN="apply.tfplan"
 DESTROY_PLAN="destroy.tfplan"

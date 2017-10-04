@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 COMMANDS=$(cat _mgmt_cmds | grep "^function" | awk '{print $2}' | grep -v "^_" | tr "\n" " " )
-ENVIRONMENTS=$(\ls -d */ | tr "\n" " ")
 APPLY_PLAN="apply.tfplan"
 DESTROY_PLAN="destroy.tfplan"
 STACK="management"
