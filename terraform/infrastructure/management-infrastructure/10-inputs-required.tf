@@ -7,8 +7,6 @@ variable "ssh_web_whitelist" {}
 variable "jenkins_image_tag" {}
 variable "vault_image_tag" {}
 variable "consul_acl_master_token_uuid" {}
-variable "private_zone_name" {}
-variable "private_zone_comment" {}
 
 # VPC
 variable "vpc_description" {}
