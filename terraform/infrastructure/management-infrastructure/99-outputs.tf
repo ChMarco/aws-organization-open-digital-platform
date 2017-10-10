@@ -10,6 +10,10 @@ output "jenkins_outputs" {
   value = "${module.jenkins.jenkins_outputs}"
 }
 
+output "openvpn_outputs" {
+  value = "${module.openvpn.openvpn_outputs}"
+}
+
 output "monitoring_outputs" {
   value = "${module.monitoring.monitoring_outputs}"
 }
