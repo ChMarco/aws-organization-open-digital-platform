@@ -1,4 +1,10 @@
-variable "enable_debug" { default = "true" }
+variable "base_aws_tags" {
+  type = "map"
+  default = {
+    Role = "OpenVPN"
+    Created_By = "Terraform"
+  }
+}
 
 variable "associate_public_ip_address" { default = false }
 variable "openvpn_ami_id" { default = "" }
@@ -7,6 +13,7 @@ variable "disable_api_termination" { default = false }
 variable "instance_initiated_shutdown_behavior" { default = "stop" }
 variable "monitoring" { default = true }
 variable "source_dest_check" { default = false }
+
 
 variable "root_block_device_volume_type" { default = "gp2" }
 variable "root_block_device_volume_size" { default = "20" }

@@ -1,12 +1,11 @@
 variable "aws_region" {}
+variable "account_id" {}
 
 variable "vpc_id" {}
-variable "vpc_cidr" {}
 variable "vpc_shortname" {}
 
 variable "openvpn_public_key" {}
 variable "openvpn_subnets" {}
-variable "openvpn_elb_subnets" {}
 variable "openvpn_ssh_bastion_access" {}
 variable "openvpn_web_whitelist" {}
 

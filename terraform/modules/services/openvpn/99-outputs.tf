@@ -9,7 +9,6 @@ data "null_data_source" "outputs" {
     openvpn_iam_policy_id = "${aws_iam_policy.openvpn_iam_policy.id}"
     openvpn_iam_policy_arn = "${aws_iam_policy.openvpn_iam_policy.arn}"
     openvpn_iam_policy_name = "${aws_iam_policy.openvpn_iam_policy.name}"
-    openvpn_elb_dns_name = "${aws_elb.openvpn_elb.dns_name}"
   }
 }
 

@@ -22,14 +22,22 @@ resource "aws_key_pair" "openvpn_key_pair" {
 
 resource "aws_security_group" "openvpn_security_group" {
 
-  name = "${format("%s_openvpn_ec2_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
+  name = "${format("%s_openvpn_ec2",
+        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
-  description = "${format("%s OpenVPN Instances Security Group",
+  description = "${format("%s Bastion Instances Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
     )}"
   vpc_id = "${var.vpc_id}"
+
+  ingress {
+    protocol = -1
+    from_port = 0
+    to_port = 0
+    cidr_blocks = [
+      "${var.vpc_cidr}"
+    ]
+  }
 
   egress {
     from_port = 0
@@ -40,66 +48,12 @@ resource "aws_security_group" "openvpn_security_group" {
     ]
   }
 
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    self = "true"
-  }
-
   ingress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    self = "true"
-  }
-
-  ingress {
-    from_port = 22
-    protocol = "6"
-    to_port = 22
-    security_groups = [
-      "${var.openvpn_ssh_bastion_access}"
-    ]
-  }
-
-  tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
-        map(
-            "Name", format("%s_openvpn_ec2",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
-            )
-        )
-    )}"
-}
-
-resource "aws_security_group" "openvpn_elb_security_group" {
-
-  name = "${format("%s_openvpn_elb_%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-  description = "${format("%s OpenVPN elb Security Group",
-        title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
-    )}"
-
-  vpc_id = "${var.vpc_id}"
-
-  ingress {
-    protocol = "tcp"
     from_port = 443
+    protocol = "6"
     to_port = 443
     cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-
-  ingress {
-    protocol = "tcp"
-    from_port = 80
-    to_port = 80
-    cidr_blocks = [
-      "0.0.0.0/0"
+      "0.0.0.0/0",
     ]
   }
 
@@ -112,29 +66,16 @@ resource "aws_security_group" "openvpn_elb_security_group" {
     ]
   }
 
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-
   tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
+        var.base_aws_tags,
         map(
-            "Name", format("%s_openvpn_elb_%s",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-            )
+            "Environment", var.deploy_environment,
+            "Name", format("%s_openvpn_ec2",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            ),
+            "Service", "openvpn"
         )
     )}"
-
-  lifecycle {
-    create_before_destroy = "true"
-  }
-
 }
 
 data "aws_iam_policy_document" "openvpn_assume_role_policy_document" {
@@ -265,85 +206,42 @@ USERDATA
     delete_on_termination = "${var.root_block_device_delete_on_termination}"
   }
 
-    provisioner "remote-exec" {
-      connection {
-        user = "openvpnas"
-        host = "${self.public_ip}"
-        private_key = "${file("${path.module}/id_rsa")}"
-        timeout = "10m"
-      }
-
-      inline = [
-        # Sleep 60 seconds until AMI is ready
-        "sleep 60",
-
-        # Set VPN network info
-        "sudo /usr/local/openvpn_as/scripts/sacli -k vpn.daemon.0.client.network -v ${element(split("/", var.vpc_cidr), 0)} ConfigPut", 10.0.0.0/16
-
-        "sudo /usr/local/openvpn_as/scripts/sacli -k vpn.daemon.0.client.netmask_bits -v ${element(split("/", var.vpc_cidr), 1)} ConfigPut",
-
-        # Do a warm restart so the config is picked up
-        "sudo /usr/local/openvpn_as/scripts/sacli start",
-      ]
-    }
-
   tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
+        var.base_aws_tags,
         map(
-            "Name", format("%s_openvpn_%s",
-                  lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                  lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-            )
+            "Environment", var.deploy_environment,
+            "Name", format("%s_openvpn_ec2",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
+            ),
+            "Service", "openvpn"
         )
     )}"
 }
 
-resource "aws_elb" "openvpn_elb" {
-
-  name = "${format("%s-openvpn-%s",
-        lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-        lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-    )}"
-
-  subnets = [
-    "${split(",", var.openvpn_elb_subnets)}"
-  ]
-  instances = [
-    "${aws_instance.openvpn.id}"
-  ]
-
-  security_groups = [
-    "${aws_security_group.openvpn_security_group.id}",
-    "${aws_security_group.openvpn_elb_security_group.id}"
-  ]
-
-  cross_zone_load_balancing = true
-  idle_timeout = 60
-  connection_draining = true
-  connection_draining_timeout = 300
-
-  listener {
-    instance_port = "80"
-    instance_protocol = "http"
-    lb_port = "80"
-    lb_protocol = "http"
-  }
-
-  health_check {
-    healthy_threshold = 2
-    unhealthy_threshold = 5
-    timeout = 5
-    target = "TCP:80"
-    interval = "30"
-  }
-
-  tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
-        map(
-            "Name", format("%s-openvpn-%s",
-                  lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                  lookup(data.null_data_source.tag_defaults.inputs, "Environment")
-            )
-        )
-    )}"
-}
+//resource "null_resource" "provision_openvpn" {
+//  triggers {
+//    subdomain_id = "${aws_route53_record.vpn.id}"
+//  }
+//
+//  connection {
+//    type = "ssh"
+//    host = "${aws_instance.openvpn.public_ip}"
+//    user = "${var.ssh_user}"
+//    private_key = "${var.private_key}"
+//    agent = false
+//  }
+//
+//  provisioner "remote-exec" {
+//    inline = [
+//      "sudo apt-get install -y curl vim libltdl7 python3 python3-pip python software-properties-common unattended-upgrades",
+//      "sudo add-apt-repository -y ppa:certbot/certbot",
+//      "sudo apt-get -y update",
+//      "sudo apt-get -y install python-certbot certbot",
+//      "sudo service openvpnas stop",
+//      "sudo certbot certonly --standalone --non-interactive --agree-tos --email ${var.certificate_email} --domains ${var.subdomain_name} --pre-hook 'service openvpnas stop' --post-hook 'service openvpnas start'",
+//      "sudo ln -s -f /etc/letsencrypt/live/${var.subdomain_name}/cert.pem /usr/local/openvpn_as/etc/web-ssl/server.crt",
+//      "sudo ln -s -f /etc/letsencrypt/live/${var.subdomain_name}/privkey.pem /usr/local/openvpn_as/etc/web-ssl/server.key",
+//      "sudo service openvpnas start",
+//    ]
+//  }
+//}
