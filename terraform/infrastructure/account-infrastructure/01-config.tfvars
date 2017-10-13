@@ -11,3 +11,7 @@ jenkins_slave_image_name = "jenkins-slave"
 vault_codebuild_name = "Vault"
 vault_codebuild_repo = "vault"
 vault_image_name = "vault"
+
+org_codebuild_name = "Organization"
+org_codebuild_repo = "organization"
+org_image_name = "organization"

@@ -36,3 +36,16 @@ module "codebuild_vault" {
 
   image_name = "${var.vault_image_name}"
 }
+
+module "codebuild_org" {
+  source = "../../modules/components/codebuild"
+
+  aws_region = "${var.aws_region}"
+
+  codebuild_name = "${var.org_codebuild_name}"
+  codebuild_repo = "${var.org_codebuild_repo}"
+
+  account_id = "${var.account_id}"
+
+  image_name = "${var.org_image_name}"
+}
