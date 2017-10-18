@@ -25,7 +25,7 @@ resource "aws_security_group" "openvpn_security_group" {
   name = "${format("%s_openvpn_ec2",
         lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix")
     )}"
-  description = "${format("%s Bastion Instances Security Group",
+  description = "${format("%s OpenVPN Instances Security Group",
         title(lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"))
     )}"
   vpc_id = "${var.vpc_id}"
@@ -35,7 +35,7 @@ resource "aws_security_group" "openvpn_security_group" {
     from_port = 0
     to_port = 0
     cidr_blocks = [
-      "${var.vpc_cidr}"
+      "0.0.0.0"
     ]
   }
 

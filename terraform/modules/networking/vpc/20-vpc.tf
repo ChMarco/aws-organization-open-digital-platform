@@ -412,7 +412,9 @@ resource "aws_route" "public_egress" {
   route_table_id = "${element(aws_route_table.public_subnet_rt.*.id, count.index)}"
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id = "${element(aws_nat_gateway.natgw.*.id, count.index)}"
-  //
+
+  count = "${length(data.aws_availability_zones.available.names)}"
+
   depends_on = [
     "aws_route_table.public_subnet_rt"
   ]
@@ -429,6 +431,66 @@ resource "aws_route" "private_egress" {
     "aws_route_table.public_subnet_rt"
   ]
 }
+
+# NACLs
+
+resource "aws_network_acl" "dmz_nacl" {
+
+  vpc_id = "${aws_vpc.vpc.id}"
+  subnet_ids = [
+    "${aws_subnet.dmz_subnet.*.id}"
+  ]
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s_dmz_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                element(data.aws_availability_zones.available.names , count.index)
+            ),
+        "Network", "DMZ"
+        )
+    )}"
+}
+
+resource "aws_network_acl" "public_nacl" {
+
+  vpc_id = "${aws_vpc.vpc.id}"
+  subnet_ids = [
+    "${aws_subnet.public_subnet.*.id}"
+  ]
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s_public_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                element(data.aws_availability_zones.available.names , count.index)
+            ),
+        "Network", "DMZ"
+        )
+    )}"
+}
+
+resource "aws_network_acl" "private_nacl" {
+
+  vpc_id = "${aws_vpc.vpc.id}"
+  subnet_ids = [
+    "${aws_subnet.private_subnet.*.id}"
+  ]
+
+  tags = "${merge(
+        data.null_data_source.tag_defaults.inputs,
+        map(
+            "Name", format("%s_private_%s",
+                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
+                element(data.aws_availability_zones.available.names , count.index)
+            ),
+        "Network", "DMZ"
+        )
+    )}"
+}
+
 
 #--------------------------------------------------------------
 # NAT Gateway & EIP
