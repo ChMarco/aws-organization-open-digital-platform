@@ -432,65 +432,6 @@ resource "aws_route" "private_egress" {
   ]
 }
 
-# NACLs
-
-resource "aws_network_acl" "dmz_nacl" {
-
-  vpc_id = "${aws_vpc.vpc.id}"
-  subnet_ids = [
-    "${aws_subnet.dmz_subnet.*.id}"
-  ]
-
-  tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
-        map(
-            "Name", format("%s_dmz_%s",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                element(data.aws_availability_zones.available.names , count.index)
-            ),
-        "Network", "DMZ"
-        )
-    )}"
-}
-
-resource "aws_network_acl" "public_nacl" {
-
-  vpc_id = "${aws_vpc.vpc.id}"
-  subnet_ids = [
-    "${aws_subnet.public_subnet.*.id}"
-  ]
-
-  tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
-        map(
-            "Name", format("%s_public_%s",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                element(data.aws_availability_zones.available.names , count.index)
-            ),
-        "Network", "DMZ"
-        )
-    )}"
-}
-
-resource "aws_network_acl" "private_nacl" {
-
-  vpc_id = "${aws_vpc.vpc.id}"
-  subnet_ids = [
-    "${aws_subnet.private_subnet.*.id}"
-  ]
-
-  tags = "${merge(
-        data.null_data_source.tag_defaults.inputs,
-        map(
-            "Name", format("%s_private_%s",
-                lookup(data.null_data_source.vpc_defaults.inputs, "name_prefix"),
-                element(data.aws_availability_zones.available.names , count.index)
-            ),
-        "Network", "DMZ"
-        )
-    )}"
-}
-
 
 #--------------------------------------------------------------
 # NAT Gateway & EIP

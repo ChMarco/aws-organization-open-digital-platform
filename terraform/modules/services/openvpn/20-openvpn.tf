@@ -35,7 +35,7 @@ resource "aws_security_group" "openvpn_security_group" {
     from_port = 0
     to_port = 0
     cidr_blocks = [
-      "0.0.0.0"
+      "0.0.0.0/0"
     ]
   }
 
