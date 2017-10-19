@@ -2,13 +2,12 @@ module "openvpn" {
   source = "../../modules/services/openvpn"
 
   aws_region = "${var.aws_region}"
+  account_id = "${var.account_id}"
   vpc_id = "${lookup(module.vpc.vpc_outputs, "vpc_id")}"
   vpc_shortname = "${var.vpc_shortname}"
-  vpc_cidr = "${var.vpc_cidr_block}"
 
   openvpn_public_key = "${var.management_keypair}"
   openvpn_subnets = "${lookup(module.vpc.vpc_outputs, "public_subnet_ids")}"
-  openvpn_elb_subnets = "${lookup(module.vpc.vpc_outputs, "dmz_subnet_ids")}"
   openvpn_ssh_bastion_access = "${lookup(module.bastion.bastion_outputs, "bastion_security_group_id")}"
   openvpn_web_whitelist = "${var.ssh_web_whitelist}"
 

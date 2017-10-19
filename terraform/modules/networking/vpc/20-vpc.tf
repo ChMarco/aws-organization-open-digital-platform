@@ -412,7 +412,9 @@ resource "aws_route" "public_egress" {
   route_table_id = "${element(aws_route_table.public_subnet_rt.*.id, count.index)}"
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id = "${element(aws_nat_gateway.natgw.*.id, count.index)}"
-  //
+
+  count = "${length(data.aws_availability_zones.available.names)}"
+
   depends_on = [
     "aws_route_table.public_subnet_rt"
   ]
@@ -429,6 +431,7 @@ resource "aws_route" "private_egress" {
     "aws_route_table.public_subnet_rt"
   ]
 }
+
 
 #--------------------------------------------------------------
 # NAT Gateway & EIP
